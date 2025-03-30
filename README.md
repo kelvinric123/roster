@@ -1,66 +1,198 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Hospital Roster Management System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A comprehensive solution for managing staff schedules, shifts, and on-call rotations in a hospital setting. This system is designed to streamline the roster creation and management process for medical departments, providing clear visibility and efficient scheduling for healthcare facilities.
 
-## About Laravel
+## System Overview
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+The Hospital Roster Management System is built to handle the complex scheduling needs of healthcare institutions. It supports various staff types, departments, and scheduling patterns, with the flexibility to accommodate both regular shifts and on-call duties.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Key Features
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Multi-Department Support**: Manage schedules across different hospital departments
+- **Staff Type Categorization**: Different roster views and rules for various medical staff categories
+- **Shift and On-Call Management**: Support for both regular shift schedules and on-call rotations
+- **Team Leader Oversight**: Hierarchical management with team leader assignment and responsibilities
+- **Holiday Integration**: Automatic consideration of public holidays in scheduling
+- **Statistical Overview**: Visual dashboards displaying staff distribution and scheduling metrics
 
-## Learning Laravel
+## Staff Role Logic
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+The system implements a hierarchical staff role structure that accommodates the different levels of healthcare professionals:
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### Staff Types
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+1. **Specialist Doctor** (`specialist_doctor`)
+   - Senior medical professionals with specialized expertise
+   - Can be assigned to both regular shifts and on-call duties
+   - May serve as team leaders for their respective departments
 
-## Laravel Sponsors
+2. **Medical Officer** (`medical_officer`) 
+   - Mid-level doctors who handle general patient care
+   - Primary workforce for regular shift coverage
+   - Can be assigned to on-call rotations when necessary
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+3. **Houseman Officer** (`houseman_officer`)
+   - Junior doctors in training
+   - Typically assigned to supervised shifts
+   - May have rotation-specific scheduling requirements
 
-### Premium Partners
+4. **Nurse** (`nurse`)
+   - Nursing staff with various experience levels
+   - Primarily works in assigned shifts with specific nursing units
+   - Different levels: Junior Nurse, Senior Nurse, Head Nurse
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+5. **Admin** (`admin`)
+   - System administrators with full access to all functionality
+   - Can manage all departments, staff types, and rosters
+   - Responsible for system configuration and management
 
-## Contributing
+### Role-Based Access
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Each staff type has specific access permissions within the system:
+- Admins can manage all system aspects
+- Specialist doctors can view and sometimes manage department rosters
+- Medical officers and nurses can primarily view their own schedules
+- Team leaders have additional permissions to manage their team members' schedules
 
-## Code of Conduct
+## Roster Type and Shift Logic
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+The system supports multiple roster types to accommodate different scheduling needs:
 
-## Security Vulnerabilities
+### Roster Types
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+1. **Regular Shift Roster**
+   - Standard shift-based scheduling
+   - Configurable shift patterns (morning, evening, night)
+   - Support for rotation patterns and shift swaps
+   - Visual calendar view with color-coded shift assignments
+
+2. **On-Call Roster**
+   - Scheduling for after-hours emergency coverage
+   - Rotation-based assignment to ensure fair distribution
+   - Integration with regular shift schedules to prevent overlaps
+   - Support for primary and backup on-call assignments
+
+### Shift Settings
+
+For each department and staff type, shift settings can be customized:
+- Shift durations (e.g., 8-hour, 12-hour shifts)
+- Start and end times for different shift types
+- Required minimum staff counts per shift
+- Special shift types for weekends or holidays
+
+## Team Leader Logic
+
+Team leaders play a crucial role in the roster management hierarchy:
+
+### Team Leader Functionality
+
+- **Assignment**: Each department can assign team leaders for different staff types
+- **Responsibilities**: Team leaders can review, approve, and adjust schedules
+- **Oversight**: They can monitor staff distribution and workload balance
+- **Approvals**: Leave requests and shift swap approvals flow through team leaders
+- **Reports**: Access to departmental statistics and staff performance metrics
+
+### Team Leader Assignment
+
+- Team leaders are typically selected from senior staff (specialist doctors or senior nurses)
+- They have department-specific oversight responsibilities
+- Assignment is managed through the team leader management interface
+- One staff member can be a team leader for multiple departments if needed
+
+## System Architecture
+
+The system follows a modular design pattern:
+
+### Core Components
+
+1. **Department Management**
+   - Creation and configuration of hospital departments
+   - Setting department-specific roster requirements
+
+2. **Staff Management**
+   - Staff profiles and qualification tracking
+   - Work history and specialization records
+   - Availability and leave management
+
+3. **Roster Creation and Management**
+   - Interactive calendar interfaces
+   - Drag-and-drop shift assignment
+   - Conflict detection and resolution
+   - Schedule template creation and reuse
+
+4. **Notification System**
+   - Alerts for new schedule assignments
+   - Reminders for upcoming shifts
+   - Notifications for schedule changes or approval requests
+
+5. **Reporting and Analytics**
+   - Staff utilization reports
+   - Department workload analysis
+   - Schedule fairness metrics
+   - Historical data comparison
+
+## Getting Started
+
+### Prerequisites
+
+- PHP 8.2 or higher
+- MySQL/MariaDB database
+- Composer
+- Node.js and NPM
+
+### Installation
+
+1. Clone the repository
+```bash
+git clone https://github.com/kelvinric123/roster.git
+```
+
+2. Install PHP dependencies
+```bash
+composer install
+```
+
+3. Install JavaScript dependencies
+```bash
+npm install
+```
+
+4. Copy the environment file and configure your database
+```bash
+cp .env.example .env
+# Edit .env file with your database credentials
+```
+
+5. Generate application key
+```bash
+php artisan key:generate
+```
+
+6. Run database migrations and seed initial data
+```bash
+php artisan migrate --seed
+```
+
+7. Build frontend assets
+```bash
+npm run build
+```
+
+8. Start the development server
+```bash
+php artisan serve
+```
+
+### Default Login
+
+After installation, you can log in with the following admin account:
+- Email: drtai@qmed.asia
+- Password: qmed.asia
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is proprietary software developed for hospital roster management.
+
+## Acknowledgments
+
+This project is developed and maintained by QMed.Asia.
