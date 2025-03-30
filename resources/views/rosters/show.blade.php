@@ -152,7 +152,45 @@
                                         </select>
                                     </div>
                                     <!-- Save Changes Button -->
-                                    <div class="mt-4 flex justify-end">
+                                    <div class="mt-4 flex justify-end gap-2">
+                                        <button type="button" 
+                                            @click="printCalendar" 
+                                            class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                            </svg>
+                                            Print
+                                        </button>
+                                        <div class="relative inline-block text-left" x-data="{ open: false }">
+                                            <button type="button" 
+                                                @click="open = !open"
+                                                class="px-4 py-2 bg-green-700 text-white rounded hover:bg-green-800">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                                Export
+                                                <svg class="-mr-1 ml-1 h-5 w-5 inline-block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                                </svg>
+                                            </button>
+                                            <div x-show="open" 
+                                                @click.away="open = false"
+                                                class="origin-top-right absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                                                <div class="py-1">
+                                                    <button @click="exportData('csv'); open = false;" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                        CSV (.csv)
+                                                    </button>
+                                                    <button @click="exportData('html'); open = false;" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                        HTML (.html)
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button type="button" 
+                                            @click="autoAssignment" 
+                                            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                                            Auto Assignment
+                                        </button>
                                         <button type="button" 
                                             @click="saveAllChanges" 
                                             class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -167,8 +205,24 @@
                                         </button>
                                     </div>
                                 </div>
+
+                                <div class="flex justify-between items-center mb-4">
+                                    <button type="button" 
+                                        @click="previousTwoWeeks" 
+                                        class="px-3 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">
+                                        &larr; Previous
+                                    </button>
+                                    <div class="text-center">
+                                        <span x-text="dateRangeText"></span>
+                                    </div>
+                                    <button type="button" 
+                                        @click="nextTwoWeeks" 
+                                        class="px-3 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">
+                                        Next &rarr;
+                                    </button>
+                                </div>
                                 
-                                <div class="overflow-x-auto roster-calendar">
+                                <div class="overflow-x-auto roster-calendar roster-calendar-container">
                                     <table class="min-w-full bg-white border-collapse">
                                         <thead>
                                             <tr class="bg-gray-100">
@@ -237,7 +291,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <template x-for="(dateInfo, index) in calendarDates" :key="dateInfo.date">
+                                            <template x-for="(dateInfo, index) in visibleCalendarDates" :key="dateInfo.date">
                                                 <tr :class="{'bg-yellow-50': dateInfo.isWeekend}">
                                                     <td class="border border-gray-300 px-4 py-2">
                                                         <div x-text="dateInfo.formatted"></div>
@@ -283,12 +337,7 @@
                                                                         <div>
                                                                             <span class="px-1 rounded-full text-xs bg-blue-100 text-blue-800" x-text="entry.shift_type_label"></span>
                                                                         </div>
-                                                                        <template x-if="entry.start_time && entry.end_time">
-                                                                            <div class="text-gray-500">
-                                                                                <span x-text="formatTime(entry.start_time)"></span> - 
-                                                                                <span x-text="formatTime(entry.end_time)"></span>
-                                                                            </div>
-                                                                        </template>
+                                                                        <!-- Time display removed -->
                                                                     </div>
                                                                 </template>
                                                             </td>
@@ -320,12 +369,7 @@
                                                                         <div>
                                                                             <span class="px-1 rounded-full text-xs bg-indigo-100 text-indigo-800" x-text="entry.shift_type_label"></span>
                                                                         </div>
-                                                                        <template x-if="entry.start_time && entry.end_time">
-                                                                            <div class="text-gray-500">
-                                                                                <span x-text="formatTime(entry.start_time)"></span> - 
-                                                                                <span x-text="formatTime(entry.end_time)"></span>
-                                                                            </div>
-                                                                        </template>
+                                                                        <!-- Time display removed -->
                                                                     </div>
                                                                 </template>
                                                             </td>
@@ -357,12 +401,7 @@
                                                                         <div>
                                                                             <span class="px-1 rounded-full text-xs bg-purple-100 text-purple-800" x-text="entry.shift_type_label"></span>
                                                                         </div>
-                                                                        <template x-if="entry.start_time && entry.end_time">
-                                                                            <div class="text-gray-500">
-                                                                                <span x-text="formatTime(entry.start_time)"></span> - 
-                                                                                <span x-text="formatTime(entry.end_time)"></span>
-                                                                            </div>
-                                                                        </template>
+                                                                        <!-- Time display removed -->
                                                                     </div>
                                                                 </template>
                                                             </td>
@@ -395,12 +434,7 @@
                                                                         <div>
                                                                             <span class="px-1 rounded-full text-xs bg-orange-100 text-orange-800" x-text="entry.shift_type_label"></span>
                                                                         </div>
-                                                                        <template x-if="entry.start_time && entry.end_time">
-                                                                            <div class="text-gray-500">
-                                                                                <span x-text="formatTime(entry.start_time)"></span> - 
-                                                                                <span x-text="formatTime(entry.end_time)"></span>
-                                                                            </div>
-                                                                        </template>
+                                                                        <!-- Time display removed -->
                                                                     </div>
                                                                 </template>
                                                             </td>
@@ -432,12 +466,7 @@
                                                                         <div>
                                                                             <span class="px-1 rounded-full text-xs bg-amber-100 text-amber-800" x-text="entry.shift_type_label"></span>
                                                                         </div>
-                                                                        <template x-if="entry.start_time && entry.end_time">
-                                                                            <div class="text-gray-500">
-                                                                                <span x-text="formatTime(entry.start_time)"></span> - 
-                                                                                <span x-text="formatTime(entry.end_time)"></span>
-                                                                            </div>
-                                                                        </template>
+                                                                        <!-- Time display removed -->
                                                                     </div>
                                                                 </template>
                                                             </td>
@@ -464,8 +493,18 @@
                 availableStaff: [],
                 entries: [],
                 calendarDates: [],
+                visibleStartIndex: 0,
+                visibleEndIndex: 13, // Show 14 days (2 weeks) by default
                 rosterType: '{{ $roster->roster_type }}',
                 draggingStaff: null,
+                
+                // Additional properties for printing
+                rosterName: '{{ $roster->name }}',
+                departmentName: '{{ $roster->department->name ?? $departmentName ?? "Not Assigned" }}',
+                staffTypeLabel: '{{ $roster->staff_type_label }}',
+                rosterTypeLabel: '{{ $roster->roster_type_label }}',
+                startDate: '{{ $roster->start_date->format("d/m/Y") }}',
+                endDate: '{{ $roster->end_date->format("d/m/Y") }}',
                 
                 init() {
                     this.loadData();
@@ -841,8 +880,1110 @@
                         // Keep the error alert for important errors
                         alert('Error saving entries: ' + error.message);
                     });
-                }
+                },
+                
+                // Two-week view navigation
+                get visibleCalendarDates() {
+                    if (!this.calendarDates || this.calendarDates.length === 0) {
+                        return [];
+                    }
+                    
+                    return this.calendarDates.slice(this.visibleStartIndex, this.visibleStartIndex + 14);
+                },
+                
+                get dateRangeText() {
+                    if (!this.visibleCalendarDates || this.visibleCalendarDates.length === 0) {
+                        return "";
+                    }
+                    
+                    const firstDate = this.visibleCalendarDates[0].date;
+                    const lastDate = this.visibleCalendarDates[this.visibleCalendarDates.length - 1].date;
+                    
+                    // Format dates as DD MMM YYYY
+                    const formatDate = (dateStr) => {
+                        const date = new Date(dateStr);
+                        return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+                    };
+                    
+                    return `${formatDate(firstDate)} - ${formatDate(lastDate)}`;
+                },
+                
+                previousTwoWeeks() {
+                    // Go back 14 days but don't go below 0
+                    this.visibleStartIndex = Math.max(0, this.visibleStartIndex - 14);
+                },
+                
+                nextTwoWeeks() {
+                    // Go forward 14 days but don't exceed the total dates
+                    const maxStart = Math.max(0, this.calendarDates.length - 14);
+                    this.visibleStartIndex = Math.min(maxStart, this.visibleStartIndex + 14);
+                },
+                
+                // Auto Assignment feature
+                autoAssignment() {
+                    // Get all visible dates and available shifts
+                    const visibleDates = this.visibleCalendarDates;
+                    if (visibleDates.length === 0 || this.availableStaff.length === 0) {
+                        alert('No dates or staff available for auto assignment');
+                        return;
+                    }
+                    
+                    // Define shift types based on roster type
+                    const shiftTypes = this.rosterType === 'shift' 
+                        ? ['morning', 'evening', 'night'] 
+                        : ['oncall', 'standby'];
+                    
+                    // Filter shift types based on the current filter
+                    const activeShiftTypes = this.shiftFilter === 'all' 
+                        ? shiftTypes 
+                        : [this.shiftFilter];
+                    
+                    // Create a mapping of how many assignments each staff has
+                    const staffAssignments = {};
+                    this.availableStaff.forEach(staff => {
+                        staffAssignments[staff.id] = 0;
+                    });
+                    
+                    // Count existing assignments for the current view
+                    visibleDates.forEach(dateInfo => {
+                        activeShiftTypes.forEach(shiftType => {
+                            const entries = this.getEntriesForDateAndShift(dateInfo.date, shiftType);
+                            entries.forEach(entry => {
+                                if (staffAssignments.hasOwnProperty(entry.staff_id)) {
+                                    staffAssignments[entry.staff_id]++;
+                                }
+                            });
+                        });
+                    });
+                    
+                    // Create a list of cells (date/shift combinations) that need staff
+                    const emptyCells = [];
+                    visibleDates.forEach(dateInfo => {
+                        activeShiftTypes.forEach(shiftType => {
+                            const entries = this.getEntriesForDateAndShift(dateInfo.date, shiftType);
+                            // Add empty cells with no staff assigned
+                            if (entries.length === 0) {
+                                emptyCells.push({
+                                    date: dateInfo.date,
+                                    shiftType
+                                });
+                            }
+                        });
+                    });
+                    
+                    console.log(`Found ${emptyCells.length} empty cells to fill`);
+                    
+                    // Sort staff by number of assignments (least to most)
+                    const sortedStaff = [...this.availableStaff].sort((a, b) => {
+                        return (staffAssignments[a.id] || 0) - (staffAssignments[b.id] || 0);
+                    });
+                    
+                    // Create temporary assignments to fill the empty cells
+                    const tempEntries = [];
+                    
+                    emptyCells.forEach(cell => {
+                        // Find the staff with the fewest assignments
+                        const staff = sortedStaff[0];
+                        
+                        // Create a new temporary entry
+                        const newEntry = {
+                            id: 'temp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                            staff_id: staff.id,
+                            staff: staff,
+                            shift_date: cell.date,
+                            date: cell.date,
+                            shift_type: cell.shiftType,
+                            shift_type_label: this.getShiftTypeLabel(cell.shiftType),
+                            is_confirmed: false,
+                            is_temp: true,
+                            start_time: '00:00:00',
+                            end_time: '23:59:59'
+                        };
+                        
+                        // Add to the entries list
+                        this.entries.push(newEntry);
+                        
+                        // Update the staff assignment count
+                        staffAssignments[staff.id]++;
+                        
+                        // Re-sort staff by assignment count
+                        sortedStaff.sort((a, b) => {
+                            return (staffAssignments[a.id] || 0) - (staffAssignments[b.id] || 0);
+                        });
+                    });
+                    
+                    if (emptyCells.length > 0) {
+                        alert(`Auto-assigned ${emptyCells.length} shifts. Click "Save All Changes" to make them permanent.`);
+                    } else {
+                        alert('No empty shifts to assign in the current view.');
+                    }
+                },
+                
+                // Print a nicely formatted calendar with roster details
+                printCalendar() {
+                    // Save current state
+                    const currentFilter = this.shiftFilter;
+                    
+                    // Always show all shifts for printing
+                    this.shiftFilter = 'all';
+                    
+                    // Wait for Alpine to update the DOM with all shifts visible
+                    this.$nextTick(() => {
+                        // Get the original table
+                        const originalTable = document.querySelector('.roster-calendar table');
+                        
+                        if (!originalTable) {
+                            console.error('Calendar table not found');
+                            this.shiftFilter = currentFilter;
+                            return;
+                        }
+                        
+                        // Create a new window for printing
+                        const printWindow = window.open('', '_blank');
+                        
+                        if (!printWindow) {
+                            alert('Please allow pop-ups to print the calendar');
+                            this.shiftFilter = currentFilter;
+                            return;
+                        }
+                        
+                        // Clone the table for the new window
+                        const tableCopy = originalTable.cloneNode(true);
+                        
+                        // Remove delete buttons from the copy
+                        tableCopy.querySelectorAll('button').forEach(button => {
+                            button.remove();
+                        });
+                        
+                        // Remove time displays
+                        tableCopy.querySelectorAll('div.text-gray-500').forEach(timeDiv => {
+                            timeDiv.remove();
+                        });
+                        
+                        // Create roster details HTML
+                        const rosterDetailsHTML = `
+                            <div class="roster-header">
+                                <h1>${this.rosterName}</h1>
+                                <div class="roster-details">
+                                    <div><strong>Department:</strong> ${this.departmentName}</div>
+                                    <div><strong>Staff Type:</strong> ${this.staffTypeLabel}</div>
+                                    <div><strong>Period:</strong> ${this.startDate} - ${this.endDate}</div>
+                                    <div><strong>Type:</strong> ${this.rosterTypeLabel}</div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Add print-specific CSS with better styling for A4 paper and no empty pages
+                        const printCSS = `
+                            @page { 
+                                size: A4 landscape;
+                                margin: 0.5cm;
+                                orphans: 4; 
+                                widows: 2;
+                            }
+                            
+                            html, body { 
+                                margin: 0; 
+                                padding: 0; 
+                                font-family: Arial, sans-serif;
+                                color: #333;
+                                background: white;
+                                width: 29.7cm;
+                                height: 21cm;
+                            }
+                            
+                            /* Header styling - more compact for A4 */
+                            .roster-header {
+                                margin-bottom: 8px;
+                                border-bottom: 1px solid #0056b3;
+                                padding-bottom: 5px;
+                                break-after: avoid;
+                            }
+                            
+                            .roster-header h1 {
+                                margin: 0 0 5px 0;
+                                font-size: 16px;
+                                color: #0056b3;
+                                text-align: center;
+                            }
+                            
+                            .roster-details {
+                                display: flex;
+                                justify-content: space-between;
+                                flex-wrap: wrap;
+                                font-size: 10px;
+                                line-height: 1.2;
+                            }
+                            
+                            .roster-details div {
+                                margin-right: 15px;
+                            }
+                            
+                            .roster-details strong {
+                                font-weight: bold;
+                            }
+                            
+                            /* Calendar table styling - optimized for A4 */
+                            #calendar-container {
+                                width: 100%;
+                            }
+                            
+                            table { 
+                                width: 100%; 
+                                border-collapse: collapse; 
+                                border: 1px solid #444; 
+                                margin-top: 3px;
+                                table-layout: fixed;
+                            }
+                            
+                            th { 
+                                background-color: #f0f0f0; 
+                                font-weight: bold; 
+                                font-size: 11px; 
+                                text-align: center; 
+                                padding: 4px 2px; 
+                                border: 1px solid #444; 
+                                color: #333;
+                            }
+                            
+                            td { 
+                                vertical-align: top; 
+                                padding: 3px 2px; 
+                                border: 1px solid #444; 
+                                font-size: 10px; 
+                                height: 55px; /* Slightly reduced height to fit 7 rows per page */
+                                overflow: hidden;
+                            }
+                            
+                            /* Date column */
+                            th:first-child, td:first-child { 
+                                width: 15%; 
+                                background-color: #f8f8f8; 
+                            }
+                            
+                            td:first-child div:first-child { 
+                                font-weight: bold; 
+                                font-size: 11px; 
+                                margin-bottom: 1px; 
+                            }
+                            
+                            td:first-child div:nth-child(2) { 
+                                font-size: 9px; 
+                                color: #666; 
+                            }
+                            
+                            /* Staff entries - make more compact */
+                            td > div > div { 
+                                margin-bottom: 3px; 
+                                line-height: 1.2;
+                            }
+                            
+                            td span.font-medium { 
+                                display: block; 
+                                font-weight: bold; 
+                                font-size: 11px; 
+                                margin-bottom: 1px;
+                                white-space: nowrap;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                            }
+                            
+                            /* Shift columns background colors - subtle and professional */
+                            th:nth-child(2), td:nth-child(2) { background-color: #f0f8ff; } /* Morning */
+                            th:nth-child(3), td:nth-child(3) { background-color: #fffaed; } /* Evening */
+                            th:nth-child(4), td:nth-child(4) { background-color: #f7f5ff; } /* Night */
+                            
+                            /* Column headers */
+                            th:nth-child(2) { color: #0066cc; }
+                            th:nth-child(3) { color: #cc7000; }
+                            th:nth-child(4) { color: #6600cc; }
+                            
+                            /* Make columns equal width */
+                            th:not(:first-child), td:not(:first-child) {
+                                width: 28.33%;
+                            }
+                            
+                            /* Weekends */
+                            tr.bg-yellow-50 { 
+                                background-color: #fffcf0; 
+                            }
+                            
+                            /* Holiday formatting */
+                            .bg-red-100 { 
+                                color: #c00; 
+                                font-style: italic; 
+                                background-color: transparent !important; 
+                                font-size: 9px; 
+                            }
+                            
+                            /* Shift labels */
+                            [x-text="entry.shift_type_label"] { 
+                                font-size: 9px; 
+                                color: #0066cc; 
+                                display: inline-block; 
+                                margin-top: 1px; 
+                            }
+                            
+                            /* Shift time display - hidden */
+                            div.text-gray-500 {
+                                display: none !important;
+                            }
+                            
+                            /* Print optimizations */
+                            @media print {
+                                html, body {
+                                    width: 100%;
+                                    height: auto;
+                                }
+                                
+                                /* Headers get repeated on new pages */
+                                thead {
+                                    display: table-header-group !important;
+                                }
+                                
+                                /* Prevent rows from breaking across pages */
+                                tr {
+                                    page-break-inside: avoid !important;
+                                    break-inside: avoid !important;
+                                }
+                                
+                                /* Force page breaks at logical points */
+                                tr[style*="page-break-before: always"] {
+                                    break-before: page !important;
+                                    page-break-before: always !important;
+                                }
+                                
+                                /* Prevent empty pages */
+                                .roster-header, table {
+                                    break-before: avoid-page !important;
+                                    page-break-before: avoid !important;
+                                }
+                            }
+                        `;
+                        
+                        // Create a filename based on staff type and period for saving
+                        const cleanStaffType = this.staffTypeLabel.replace(/\s+/g, '_').toLowerCase();
+                        const cleanPeriod = this.startDate.replace(/\//g, '-') + "_to_" + this.endDate.replace(/\//g, '-');
+                        const saveFilename = `Roster_${cleanStaffType}_${cleanPeriod}`;
+                        
+                        // Write the content to the new window with roster details, using custom filename
+                        printWindow.document.write(`
+                            <!DOCTYPE html>
+                            <html>
+                            <head>
+                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                <title>${saveFilename}</title>
+                                <style>${printCSS}</style>
+                            </head>
+                            <body>
+                                ${rosterDetailsHTML}
+                                <div id="calendar-container"></div>
+                            </body>
+                            </html>
+                        `);
+                        
+                        // Optimize table for A4 size by creating a single table with page break CSS
+                        const optimizeForA4 = () => {
+                            // Create a single table container
+                            const tableContainer = document.createElement('div');
+                            
+                            // Clone the table
+                            const mainTable = tableCopy.cloneNode(true);
+                            
+                            // Get all rows
+                            const allRows = Array.from(mainTable.querySelectorAll('tbody tr'));
+                            
+                            // Add page break classes at appropriate intervals
+                            allRows.forEach((row, index) => {
+                                // Add page break before every 7th row (except the first set)
+                                if (index > 0 && index % 7 === 0) {
+                                    row.style.pageBreakBefore = 'always';
+                                    
+                                    // Add a small indicator for page break rows (only visible in print)
+                                    const firstCell = row.querySelector('td:first-child');
+                                    if (firstCell) {
+                                        // Add page number to the date cell
+                                        const pageNum = Math.floor(index / 7) + 1;
+                                        const pageIndicator = document.createElement('div');
+                                        pageIndicator.style.fontSize = '8px';
+                                        pageIndicator.style.color = '#666';
+                                        pageIndicator.style.marginTop = '2px';
+                                        pageIndicator.textContent = `Page ${pageNum}`;
+                                        firstCell.appendChild(pageIndicator);
+                                    }
+                                }
+                            });
+                            
+                            // Make sure the header repeats on each page
+                            const thead = mainTable.querySelector('thead');
+                            if (thead) {
+                                thead.style.display = 'table-header-group';
+                            }
+                            
+                            // Add the table to the container
+                            tableContainer.appendChild(mainTable);
+                            
+                            // Add the container to the print window
+                            printWindow.document.getElementById('calendar-container').appendChild(tableContainer);
+                        };
+                        
+                        // Run the optimization
+                        optimizeForA4();
+                        
+                        // Wait for images and assets to load
+                        printWindow.document.close();
+                        
+                        // Print once the content is loaded
+                        printWindow.onload = function() {
+                            setTimeout(() => {
+                                printWindow.print();
+                                // Close the window after printing (optional)
+                                // printWindow.close();
+                            }, 300);
+                        };
+                        
+                        // Restore the original filter
+                        this.shiftFilter = currentFilter;
+                    });
+                },
+                
+                // Export the calendar to Excel
+                exportToExcel() {
+                    // Save current state
+                    const currentFilter = this.shiftFilter;
+                    
+                    // Always show all shifts for exporting
+                    this.shiftFilter = 'all';
+                    
+                    // Wait for Alpine to update the DOM with all shifts visible
+                    this.$nextTick(() => {
+                        // Generate filename based on staff type and period
+                        const cleanStaffType = this.staffTypeLabel.replace(/\s+/g, '_').toLowerCase();
+                        const cleanPeriod = this.startDate.replace(/\//g, '-') + "_to_" + this.endDate.replace(/\//g, '-');
+                        const fileName = `Roster_${cleanStaffType}_${cleanPeriod}.xlsx`;
+                        
+                        // Create header row for the Excel file
+                        const headers = ['Date'];
+                        
+                        // Add shift type headers based on roster type
+                        if (this.rosterType === 'shift') {
+                            headers.push('Morning Shift', 'Evening Shift', 'Night Shift');
+                        } else {
+                            headers.push('First Oncall', 'Second Oncall');
+                        }
+                        
+                        // Prepare data rows for each date
+                        const rows = [];
+                        
+                        // Use all calendar dates, not just visible ones for export
+                        this.calendarDates.forEach(dateInfo => {
+                            // Create row with date information
+                            const dateText = `${dateInfo.formatted} (${dateInfo.day})`;
+                            const row = [dateText];
+                            
+                            // Add data for each shift type
+                            const shiftTypes = this.rosterType === 'shift' 
+                                ? ['morning', 'evening', 'night'] 
+                                : ['oncall', 'standby'];
+                                
+                            shiftTypes.forEach(shiftType => {
+                                const entries = this.getEntriesForDateAndShift(dateInfo.date, shiftType);
+                                if (entries.length > 0) {
+                                    // Format staff assignments into a single cell
+                                    const staffNames = entries.map(entry => {
+                                        return entry.staff.name;
+                                    }).join('\n');
+                                    row.push(staffNames);
+                                } else {
+                                    row.push(''); // Empty cell if no assignments
+                                }
+                            });
+                            
+                            rows.push(row);
+                        });
+                        
+                        // Add roster details as header rows
+                        const titleRow = [`${this.rosterName}`];
+                        for (let i = 1; i < headers.length; i++) titleRow.push('');
+                        
+                        const detailsRows = [
+                            [`Department: ${this.departmentName}`, '', '', ''],
+                            [`Staff Type: ${this.staffTypeLabel}`, '', '', ''],
+                            [`Period: ${this.startDate} - ${this.endDate}`, '', '', ''],
+                            [`Type: ${this.rosterTypeLabel}`, '', '', '']
+                        ];
+                        
+                        // Combine all rows
+                        const allRows = [
+                            titleRow,
+                            ...detailsRows,
+                            [], // Empty row for spacing
+                            headers,
+                            ...rows
+                        ];
+                        
+                        // Create a worksheet
+                        const worksheet = XLSX.utils.aoa_to_sheet(allRows);
+                        
+                        // Set column widths
+                        const colWidths = [
+                            { wch: 25 }, // Date column
+                            { wch: 30 }, // First shift column
+                            { wch: 30 }, // Second shift column
+                            { wch: 30 }  // Third shift column (if applicable)
+                        ];
+                        worksheet['!cols'] = colWidths;
+                        
+                        // Create a workbook
+                        const workbook = XLSX.utils.book_new();
+                        XLSX.utils.book_append_sheet(workbook, worksheet, "Roster");
+                        
+                        // Save to file
+                        XLSX.writeFile(workbook, fileName);
+                        
+                        // Restore the original filter
+                        this.shiftFilter = currentFilter;
+                    });
+                },
+                
+                // Export the calendar data in different formats (CSV or HTML)
+                exportData(format = 'csv') {
+                    // Save current state
+                    const currentFilter = this.shiftFilter;
+                    
+                    // Always show all shifts for exporting
+                    this.shiftFilter = 'all';
+                    
+                    // Wait for Alpine to update the DOM with all shifts visible
+                    this.$nextTick(() => {
+                        try {
+                            // Generate filename based on staff type and period
+                            const cleanStaffType = this.staffTypeLabel.replace(/\s+/g, '_').toLowerCase();
+                            const cleanPeriod = this.startDate.replace(/\//g, '-') + "_to_" + this.endDate.replace(/\//g, '-');
+                            const fileExt = format === 'csv' ? 'csv' : 'html';
+                            const fileName = `Roster_${cleanStaffType}_${cleanPeriod}.${fileExt}`;
+                            
+                            // Create header row for the file
+                            const headers = ['Date'];
+                            
+                            // Add shift type headers based on roster type
+                            if (this.rosterType === 'shift') {
+                                headers.push('Morning Shift', 'Evening Shift', 'Night Shift');
+                            } else {
+                                headers.push('First Oncall', 'Second Oncall');
+                            }
+                            
+                            // Prepare data rows for each date
+                            const rows = [];
+                            
+                            // Use all calendar dates, not just visible ones for export
+                            this.calendarDates.forEach(dateInfo => {
+                                // Create row with date information
+                                const dateText = `${dateInfo.formatted} (${dateInfo.day})`;
+                                const row = [dateText];
+                                
+                                // Add data for each shift type
+                                const shiftTypes = this.rosterType === 'shift' 
+                                    ? ['morning', 'evening', 'night'] 
+                                    : ['oncall', 'standby'];
+                                    
+                                shiftTypes.forEach(shiftType => {
+                                    const entries = this.getEntriesForDateAndShift(dateInfo.date, shiftType);
+                                    if (entries.length > 0) {
+                                        // Format staff assignments into a single cell
+                                        const staffNames = entries.map(entry => {
+                                            return entry.staff.name;
+                                        }).join('\n');
+                                        row.push(staffNames);
+                                    } else {
+                                        row.push(''); // Empty cell if no assignments
+                                    }
+                                });
+                                
+                                rows.push(row);
+                            });
+                            
+                            // Add roster details as header rows
+                            const titleRow = [`${this.rosterName}`];
+                            for (let i = 1; i < headers.length; i++) titleRow.push('');
+                            
+                            const detailsRows = [
+                                [`Department: ${this.departmentName}`, '', '', ''],
+                                [`Staff Type: ${this.staffTypeLabel}`, '', '', ''],
+                                [`Period: ${this.startDate} - ${this.endDate}`, '', '', ''],
+                                [`Type: ${this.rosterTypeLabel}`, '', '', '']
+                            ];
+                            
+                            // Combine all rows
+                            const allRows = [
+                                titleRow,
+                                ...detailsRows,
+                                [], // Empty row for spacing
+                                headers,
+                                ...rows
+                            ];
+                            
+                            // Choose the appropriate export format
+                            if (format === 'html') {
+                                // Create HTML table for export
+                                this.exportAsHTML(fileName, headers, allRows);
+                            } else {
+                                // Export as CSV with two-week chunks
+                                this.exportAsCSVFallback(fileName, allRows);
+                            }
+                        } catch (error) {
+                            console.error('Export error:', error);
+                            alert(`Export error: ${error.message}`);
+                        } finally {
+                            // Restore the original filter
+                            this.shiftFilter = currentFilter;
+                        }
+                    });
+                },
+                
+                // Add the fallback CSV export method
+                exportAsCSVFallback(fileName, allRows) {
+                    try {
+                        // Simple function to convert a cell to CSV format
+                        const escapeCSV = (cell) => {
+                            if (cell === null || cell === undefined) return '';
+                            let text = String(cell);
+                            // If the cell contains commas, quotes, or newlines, wrap it in quotes
+                            if (text.includes(',') || text.includes('"') || text.includes('\n')) {
+                                // Double quotes inside the cell need to be escaped with another double quote
+                                text = text.replace(/"/g, '""');
+                                return `"${text}"`;
+                            }
+                            return text;
+                        };
+                        
+                        // Extract headers and data rows
+                        const headerRows = allRows.slice(0, 6); // Title, details, empty row, and column headers
+                        const dataRows = allRows.slice(6); // Actual calendar data
+                        
+                        // Build CSV content
+                        let csvContent = '';
+                        
+                        // First add header information
+                        headerRows.forEach(row => {
+                            csvContent += row.map(cell => escapeCSV(cell)).join(',') + '\n';
+                        });
+                        
+                        // Now process data rows in two-week chunks
+                        for (let i = 0; i < dataRows.length; i += 14) {
+                            // If this is not the first chunk, add a separator and repeat headers
+                            if (i > 0) {
+                                csvContent += '\n\n'; // Empty rows as separator
+                                
+                                // Add period indicator for this two-week period
+                                let startDate = '';
+                                let endDate = '';
+                                
+                                if (i < dataRows.length) {
+                                    // Extract date from first column, which includes date info
+                                    startDate = dataRows[i][0].split(' ')[0];
+                                }
+                                
+                                const endIndex = Math.min(i + 13, dataRows.length - 1);
+                                if (endIndex < dataRows.length) {
+                                    // Extract date from last row in this chunk
+                                    endDate = dataRows[endIndex][0].split(' ')[0];
+                                }
+                                
+                                const periodText = [`Two-Week Period: ${startDate} - ${endDate}`];
+                                for (let j = 1; j < headerRows[5].length; j++) {
+                                    periodText.push(''); // Empty cells to match column count
+                                }
+                                
+                                // Add period text and column headers again
+                                csvContent += periodText.map(cell => escapeCSV(cell)).join(',') + '\n';
+                                csvContent += headerRows[5].map(cell => escapeCSV(cell)).join(',') + '\n';
+                            }
+                            
+                            // Add the rows for this two-week chunk
+                            const currentChunk = dataRows.slice(i, i + 14);
+                            currentChunk.forEach(row => {
+                                csvContent += row.map(cell => escapeCSV(cell)).join(',') + '\n';
+                            });
+                        }
+                        
+                        // Download the CSV file
+                        this.downloadFile(csvContent, fileName, 'text/csv');
+                    } catch (error) {
+                        console.error('CSV fallback error:', error);
+                        alert(`CSV export error: ${error.message}`);
+                    }
+                },
+                
+                // Helper function to download file data
+                downloadFile(content, fileName, contentType) {
+                    const blob = new Blob([content], { type: contentType });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                },
+                
+                // Export as HTML table
+                exportAsHTML(fileName, headers, rows) {
+                    // Create basic CSS for the HTML export
+                    const css = `
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        h1 { color: #0056b3; }
+                        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+                        th { background-color: #f0f0f0; text-align: left; padding: 8px; border: 1px solid #ddd; }
+                        td { padding: 8px; border: 1px solid #ddd; vertical-align: top; }
+                        .title { font-size: 20px; font-weight: bold; margin-bottom: 10px; }
+                        .details { margin-bottom: 20px; }
+                        .details div { margin-bottom: 5px; }
+                        tr:nth-child(even) { background-color: #f9f9f9; }
+                        td:first-child { font-weight: bold; }
+                        /* Hide any time information */
+                        .text-gray-500, div[class*="text-gray"] { display: none; }
+                    `;
+                    
+                    // Start building HTML content
+                    let html = `<!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>${this.rosterName}</title>
+                        <style>${css}</style>
+                    </head>
+                    <body>`;
+                    
+                    // Add title and details
+                    html += `<div class="title">${this.rosterName}</div>`;
+                    html += `<div class="details">
+                        <div><strong>Department:</strong> ${this.departmentName}</div>
+                        <div><strong>Staff Type:</strong> ${this.staffTypeLabel}</div>
+                        <div><strong>Period:</strong> ${this.startDate} - ${this.endDate}</div>
+                        <div><strong>Type:</strong> ${this.rosterTypeLabel}</div>
+                    </div>`;
+                    
+                    // Start table
+                    html += '<table>';
+                    
+                    // Add table headers
+                    html += '<thead><tr>';
+                    headers.forEach(header => {
+                        html += `<th>${header}</th>`;
+                    });
+                    html += '</tr></thead>';
+                    
+                    // Add table rows, skipping the title and details rows
+                    html += '<tbody>';
+                    const dataRows = rows.slice(6); // Skip title, details, and empty row
+                    dataRows.forEach(row => {
+                        html += '<tr>';
+                        row.forEach((cell, index) => {
+                            // Replace newlines with <br> for HTML display
+                            const cellContent = cell ? cell.replace(/\n/g, '<br>') : '';
+                            html += `<td>${cellContent}</td>`;
+                        });
+                        html += '</tr>';
+                    });
+                    html += '</tbody></table>';
+                    
+                    // Close HTML
+                    html += '</body></html>';
+                    
+                    // Download the HTML file
+                    this.downloadFile(html, fileName, 'text/html');
+                },
             }));
         });
     </script>
+
+    @push('styles')
+    <!-- Print-specific styles -->
+    <style media="print">
+        /* Reset all styling for print */
+        * {
+            box-sizing: border-box !important;
+        }
+        
+        /* Hide everything by default */
+        body * {
+            display: none !important;
+        }
+        
+        /* Only show what we explicitly want */
+        .print-title, .print-roster-details, .roster-calendar-container,
+        .roster-calendar-container *, body.printing-roster .print-title,
+        body.printing-roster .print-roster-details {
+            display: block !important;
+        }
+        
+        /* Hide specific elements */
+        .flex.justify-between.items-center.mb-4, 
+        button[type="button"][class*="px-3 py-1"], 
+        .text-center,
+        .dateRangeText,
+        .roster-calendar-container > *:not(table) {
+            display: none !important;
+        }
+        
+        /* Basic page setup */
+        @page {
+            size: landscape;
+            margin: 0.5cm;
+        }
+        
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            background: white !important;
+            font-family: Arial, sans-serif !important;
+            font-size: 12px !important;
+        }
+        
+        /* Layout containers reset */
+        .py-12, .max-w-7xl, .p-6 {
+            margin: 0 !important;
+            padding: 0 !important;
+            max-width: 100% !important;
+            box-shadow: none !important;
+            border: none !important;
+        }
+        
+        /* Title styles */
+        .print-title {
+            text-align: center !important;
+            font-size: 18px !important;
+            font-weight: bold !important;
+            margin: 0 0 5px 0 !important;
+            padding: 0 !important;
+            display: none !important; /* Hide title as per example */
+        }
+        
+        /* Roster details styling */
+        .print-roster-details {
+            margin: 0 0 10px 0 !important;
+            padding: 0 !important;
+            border-bottom: 1px solid #000 !important;
+            padding-bottom: 5px !important;
+            display: none !important; /* Hide details as per example */
+        }
+        
+        /* Calendar container */
+        .roster-calendar {
+            width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: visible !important;
+        }
+        
+        /* Table formatting */
+        table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            page-break-inside: auto !important;
+        }
+        
+        /* Table header */
+        thead {
+            display: table-header-group !important;
+        }
+        
+        /* Column formatting */
+        th {
+            background-color: #f9f9f9 !important;
+            color: black !important;
+            font-weight: bold !important;
+            text-align: center !important;
+            padding: 8px 5px !important;
+            border: 1px solid #000 !important;
+            font-size: 14px !important;
+        }
+        
+        /* Make date column narrower */
+        th:first-child, td:first-child {
+            width: 15% !important;
+        }
+        
+        /* Make shift columns equal width */
+        th:not(:first-child), td:not(:first-child) {
+            width: 28.33% !important;
+        }
+        
+        /* Row formatting */
+        tr {
+            page-break-inside: avoid !important;
+        }
+        
+        /* Weekend highlighting */
+        tr.bg-yellow-50 {
+            background-color: #fffbe6 !important;
+        }
+        
+        /* Cell formatting */
+        td {
+            vertical-align: top !important;
+            padding: 8px 5px !important;
+            border: 1px solid #000 !important;
+            font-size: 12px !important;
+            height: 80px !important; /* Fixed height for cells */
+        }
+        
+        /* Date cell formatting */
+        td:first-child {
+            font-weight: bold !important;
+            background-color: #f9f9f9 !important;
+        }
+        
+        td:first-child div:first-child {
+            font-weight: bold !important;
+            font-size: 14px !important;
+            margin-bottom: 2px !important;
+        }
+        
+        td:first-child div:nth-child(2) {
+            font-size: 12px !important;
+            color: #666 !important;
+        }
+        
+        /* Holiday formatting */
+        td:first-child .bg-red-100 {
+            color: #c00 !important;
+            font-style: italic !important;
+            padding: 0 !important;
+            margin-top: 4px !important;
+            border: none !important;
+            background: transparent !important;
+            font-size: 11px !important;
+        }
+        
+        /* Staff entry cards */
+        td > div[x-for] > div {
+            border: none !important;
+            margin-bottom: 8px !important;
+            padding: 0 !important;
+            background-color: transparent !important;
+            font-size: 12px !important;
+        }
+        
+        /* Show template elements */
+        template {
+            display: none !important;
+        }
+        
+        [x-for] {
+            display: block !important;
+        }
+        
+        [x-cloak] {
+            display: block !important;
+        }
+        
+        /* Show staff names clearly */
+        td span.font-medium {
+            display: block !important;
+            font-weight: bold !important;
+            font-size: 14px !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            width: 100% !important;
+            color: #000 !important;
+        }
+        
+        /* Clean staff entry layout */
+        td div.flex {
+            display: block !important;
+        }
+        
+        /* Hide delete buttons */
+        button.text-gray-400 {
+            display: none !important;
+        }
+        
+        /* Shift labels - hide as per example */
+        span[x-text="entry.shift_type_label"] {
+            font-size: 12px !important;
+            color: #0000cc !important;
+            font-weight: normal !important;
+            display: inline-block !important;
+            margin-top: 2px !important;
+        }
+        
+        /* Shift type colors */
+        /* Morning shift */
+        th.bg-blue-50 {
+            background-color: #eff6ff !important;
+            color: #1e40af !important;
+        }
+        
+        /* Evening shift */
+        th.bg-yellow-50 {
+            background-color: #fffbeb !important;
+            color: #854d0e !important;
+        }
+        
+        /* Night shift */
+        th.bg-indigo-50 {
+            background-color: #eef2ff !important;
+            color: #3730a3 !important;
+        }
+        
+        /* Shift time display - hidden */
+        div.text-gray-500 {
+            display: none !important;
+        }
+        
+        /* Fix element visibility */
+        .md\:col-span-3, .overflow-x-auto {
+            display: block !important;
+            width: 100% !important;
+        }
+        
+        /* Remove background colors for shift labels */
+        span.px-1.rounded-full.text-xs.bg-blue-100,
+        span.px-1.rounded-full.text-xs.bg-indigo-100,
+        span.px-1.rounded-full.text-xs.bg-purple-100 {
+            background-color: transparent !important;
+            padding: 0 !important;
+            border-radius: 0 !important;
+        }
+        
+        /* Table coloring to match example */
+        table {
+            border: 1px solid #000 !important;
+        }
+        
+        /* Color shift columns */
+        th:nth-child(2), td:nth-child(2) {
+            background-color: #f0f8ff !important;
+        }
+        
+        th:nth-child(3), td:nth-child(3) {
+            background-color: #fffff0 !important;
+        }
+        
+        th:nth-child(4), td:nth-child(4) {
+            background-color: #f0f0ff !important;
+        }
+        
+        /* Full page margin reset - get content right to the edge */
+        .max-w-7xl, .sm\:px-6, .lg\:px-8, .py-12, .p-6 {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        /* Ensure table starts at the very top of the print area */
+        .roster-calendar {
+            margin-top: 0 !important;
+        }
+    }
+    </style>
+    @endpush
+    
+    @push('scripts')
+    <!-- No external libraries needed for CSV/HTML export -->
+    @endpush
 </x-app-layout> 
