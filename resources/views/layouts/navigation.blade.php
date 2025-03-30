@@ -82,9 +82,11 @@
                                         {{ __('Manage Rosters') }}
                                     </a>
                                     @endif
+                                    @if(!$isAdmin)
                                     <a href="{{ route('staff.rosters.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('staff.rosters.*') ? 'bg-gray-100' : '' }}">
                                         {{ __('View Rosters') }}
                                     </a>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -218,9 +220,11 @@
                     </x-responsive-nav-link>
                     @endif
                     
+                    @if(!$isAdmin)
                     <x-responsive-nav-link :href="route('staff.rosters.index')" :active="request()->routeIs('staff.rosters.*')">
                         <div class="pl-3">{{ __('View Rosters') }}</div>
                     </x-responsive-nav-link>
+                    @endif
                 </div>
             </div>
             

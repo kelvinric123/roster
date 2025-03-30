@@ -76,7 +76,7 @@
                         <div id="specialist_doctor_fields" class="space-y-6" style="display: none;">
                             <div>
                                 <x-input-label for="specialization" :value="__('Specialization')" />
-                                <select id="specialization" name="specialization" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
+                                <select id="specialization" name="specialization" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                                     <option value="">Select Specialization</option>
                                     <option value="Cardiology" {{ old('specialization', $staff->specialization) == 'Cardiology' ? 'selected' : '' }}>Cardiology</option>
                                     <option value="Neurology" {{ old('specialization', $staff->specialization) == 'Neurology' ? 'selected' : '' }}>Neurology</option>
@@ -99,7 +99,7 @@
                         <div id="medical_officer_fields" class="space-y-6" style="display: none;">
                             <div>
                                 <x-input-label for="mo_specialization" :value="__('Specialization')" />
-                                <select id="mo_specialization" name="specialization" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
+                                <select id="mo_specialization" name="specialization" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                                     <option value="">Select Specialization</option>
                                     <option value="General Medicine" {{ old('specialization', $staff->specialization) == 'General Medicine' ? 'selected' : '' }}>General Medicine</option>
                                     <option value="Accident & Emergency" {{ old('specialization', $staff->specialization) == 'Accident & Emergency' ? 'selected' : '' }}>Accident & Emergency</option>
@@ -223,11 +223,9 @@
                 // Show the relevant fields based on type and set required attributes
                 if (type === 'specialist_doctor') {
                     specialistFields.style.display = 'block';
-                    if (specialization) specialization.setAttribute('required', 'required');
                     if (qualification) qualification.setAttribute('required', 'required');
                 } else if (type === 'medical_officer') {
                     moFields.style.display = 'block';
-                    if (moSpecialization) moSpecialization.setAttribute('required', 'required');
                 } else if (type === 'houseman_officer') {
                     hoFields.style.display = 'block';
                     if (currentRotation) currentRotation.setAttribute('required', 'required');

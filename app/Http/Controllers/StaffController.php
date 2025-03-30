@@ -214,7 +214,27 @@ class StaffController extends Controller
         
         $departments = \App\Models\Department::where('is_active', true)->get();
         $user = \App\Models\User::where('staff_id', $staff->id)->first();
-        return view('staff.edit', compact('staff', 'departments', 'user', 'isAdmin'));
+        
+        // Only show admin staff type option for admin users
+        $staffTypes = [];
+        if ($isAdmin) {
+            $staffTypes = [
+                'admin' => 'Administrator',
+                'specialist_doctor' => 'Specialist Doctor',
+                'medical_officer' => 'Medical Officer',
+                'houseman_officer' => 'Houseman Officer',
+                'nurse' => 'Nurse'
+            ];
+        } else {
+            $staffTypes = [
+                'specialist_doctor' => 'Specialist Doctor',
+                'medical_officer' => 'Medical Officer',
+                'houseman_officer' => 'Houseman Officer',
+                'nurse' => 'Nurse'
+            ];
+        }
+        
+        return view('staff.edit', compact('staff', 'departments', 'user', 'isAdmin', 'staffTypes'));
     }
 
     /**
@@ -323,11 +343,11 @@ class StaffController extends Controller
         return match($type) {
             'admin' => [],
             'specialist_doctor' => [
-                'specialization' => 'required|string|max:255',
+                'specialization' => 'nullable|string|max:255',
                 'qualification' => 'required|string|max:255',
             ],
             'medical_officer' => [
-                'specialization' => 'required|string|max:255',
+                'specialization' => 'nullable|string|max:255',
             ],
             'houseman_officer' => [
                 'current_rotation' => 'required|string|max:255',
