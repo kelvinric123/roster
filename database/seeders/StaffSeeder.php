@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
+use Faker\Factory as Faker;
 
 class StaffSeeder extends Seeder
 {
@@ -16,23 +17,25 @@ class StaffSeeder extends Seeder
      */
     public function run(): void
     {
+        $faker = Faker::create();
+        
         // Get all department IDs
         $departmentIds = Department::pluck('id')->toArray();
         
         // Specialist Doctors
-        $this->createSpecialistDoctors($departmentIds);
+        $this->createSpecialistDoctors($departmentIds, $faker);
         
         // Medical Officers
-        $this->createMedicalOfficers($departmentIds);
+        $this->createMedicalOfficers($departmentIds, $faker);
         
         // Houseman Officers
-        $this->createHousemanOfficers($departmentIds);
+        $this->createHousemanOfficers($departmentIds, $faker);
         
         // Nurses
-        $this->createNurses($departmentIds);
+        $this->createNurses($departmentIds, $faker);
         
         // Create additional staff specifically for Internal Medicine Department (ID: 1)
-        $this->createInternalMedicineStaff();
+        $this->createInternalMedicineStaff($faker);
         
         // Create admin staff
         $this->createAdminStaff();
@@ -43,7 +46,7 @@ class StaffSeeder extends Seeder
         $this->command->info('Created user accounts for all staff with default password: qmed.asia');
     }
 
-    private function createSpecialistDoctors($departmentIds)
+    private function createSpecialistDoctors($departmentIds, $faker)
     {
         $specializations = ['Cardiology', 'Neurology', 'Orthopedics', 'Pediatrics', 'Psychiatry'];
         $malaysianDoctorNames = [
@@ -65,15 +68,15 @@ class StaffSeeder extends Seeder
                 'type' => 'specialist_doctor',
                 'department_id' => $departmentIds[array_rand($departmentIds)],
                 'specialization' => $specializations[$i],
-                'qualification' => 'MD, ' . fake()->randomElement(['MRCS', 'FRCS', 'MRCP', 'MMed']),
-                'joining_date' => fake()->dateTimeBetween('-5 years', '-6 months'),
+                'qualification' => 'MD, ' . $faker->randomElement(['MRCS', 'FRCS', 'MRCP', 'MMed']),
+                'joining_date' => $faker->dateTimeBetween('-5 years', '-6 months'),
                 'is_active' => true,
-                'notes' => fake()->paragraph(2),
+                'notes' => $faker->paragraph(2),
             ]);
         }
     }
 
-    private function createMedicalOfficers($departmentIds)
+    private function createMedicalOfficers($departmentIds, $faker)
     {
         $departments = ['Emergency', 'Outpatient', 'Ward', 'ICU', 'General'];
         $malaysianMONames = [
@@ -95,14 +98,14 @@ class StaffSeeder extends Seeder
                 'type' => 'medical_officer',
                 'department_id' => $departmentIds[array_rand($departmentIds)],
                 'department' => $departments[$i],
-                'joining_date' => fake()->dateTimeBetween('-3 years', '-6 months'),
+                'joining_date' => $faker->dateTimeBetween('-3 years', '-6 months'),
                 'is_active' => true,
-                'notes' => fake()->paragraph(1),
+                'notes' => $faker->paragraph(1),
             ]);
         }
     }
 
-    private function createHousemanOfficers($departmentIds)
+    private function createHousemanOfficers($departmentIds, $faker)
     {
         $rotations = ['Medicine', 'Surgery', 'Pediatrics', 'Obstetrics', 'Emergency'];
         $malaysianHONames = [
@@ -124,15 +127,15 @@ class StaffSeeder extends Seeder
                 'type' => 'houseman_officer',
                 'department_id' => $departmentIds[array_rand($departmentIds)],
                 'current_rotation' => $rotations[$i],
-                'graduation_year' => fake()->numberBetween(2020, 2023),
-                'joining_date' => fake()->dateTimeBetween('-1 year', '-1 month'),
+                'graduation_year' => $faker->numberBetween(2020, 2023),
+                'joining_date' => $faker->dateTimeBetween('-1 year', '-1 month'),
                 'is_active' => true,
-                'notes' => fake()->paragraph(1),
+                'notes' => $faker->paragraph(1),
             ]);
         }
     }
 
-    private function createNurses($departmentIds)
+    private function createNurses($departmentIds, $faker)
     {
         $units = ['General', 'ICU', 'Emergency', 'Pediatrics', 'Surgery'];
         $levels = ['Junior Nurse', 'Senior Nurse', 'Head Nurse', 'Junior Nurse', 'Senior Nurse'];
@@ -157,9 +160,9 @@ class StaffSeeder extends Seeder
                 'department_id' => $departmentIds[array_rand($departmentIds)],
                 'nursing_unit' => $units[$i],
                 'nurse_level' => $levels[$i],
-                'joining_date' => fake()->dateTimeBetween('-4 years', '-3 months'),
+                'joining_date' => $faker->dateTimeBetween('-4 years', '-3 months'),
                 'is_active' => true,
-                'notes' => fake()->paragraph(1),
+                'notes' => $faker->paragraph(1),
             ]);
         }
     }
@@ -167,7 +170,7 @@ class StaffSeeder extends Seeder
     /**
      * Create additional staff specifically for Internal Medicine Department (ID: 1)
      */
-    private function createInternalMedicineStaff()
+    private function createInternalMedicineStaff($faker)
     {
         // Internal Medicine specific specializations
         $internalMedicineSpecializations = [
@@ -194,7 +197,7 @@ class StaffSeeder extends Seeder
         foreach ($specialistDoctors as $name => $specialization) {
             $simpleName = str_replace(['Dr. ', 'bin ', 'binti ', 'a/l '], '', $name);
             $firstName = explode(' ', $simpleName)[0];
-            $email = strtolower($firstName) . '.' . fake()->randomNumber(3) . '@hospital.gov.my';
+            $email = strtolower($firstName) . '.' . $faker->randomNumber(3) . '@hospital.gov.my';
             
             Staff::create([
                 'name' => $name,
@@ -203,10 +206,10 @@ class StaffSeeder extends Seeder
                 'type' => 'specialist_doctor',
                 'department_id' => 1, // Internal Medicine Department
                 'specialization' => $specialization,
-                'qualification' => 'MD, ' . fake()->randomElement(['MRCP', 'MMed(Int Med)', 'Fellowship', 'FRCP']),
-                'joining_date' => fake()->dateTimeBetween('-8 years', '-1 year'),
+                'qualification' => 'MD, ' . $faker->randomElement(['MRCP', 'MMed(Int Med)', 'Fellowship', 'FRCP']),
+                'joining_date' => $faker->dateTimeBetween('-8 years', '-1 year'),
                 'is_active' => true,
-                'notes' => fake()->paragraph(2),
+                'notes' => $faker->paragraph(2),
             ]);
         }
         
@@ -228,7 +231,7 @@ class StaffSeeder extends Seeder
         foreach ($medicalOfficers as $index => $name) {
             $simpleName = str_replace(['Dr. ', 'bin ', 'binti ', 'a/l '], '', $name);
             $firstName = explode(' ', $simpleName)[0];
-            $email = strtolower($firstName) . '.' . fake()->randomNumber(3) . '@hospital.gov.my';
+            $email = strtolower($firstName) . '.' . $faker->randomNumber(3) . '@hospital.gov.my';
             
             Staff::create([
                 'name' => $name,
@@ -237,9 +240,9 @@ class StaffSeeder extends Seeder
                 'type' => 'medical_officer',
                 'department_id' => 1, // Internal Medicine Department
                 'department' => $departments[$index],
-                'joining_date' => fake()->dateTimeBetween('-4 years', '-2 months'),
+                'joining_date' => $faker->dateTimeBetween('-4 years', '-2 months'),
                 'is_active' => true,
-                'notes' => fake()->paragraph(1),
+                'notes' => $faker->paragraph(1),
             ]);
         }
         
@@ -258,7 +261,7 @@ class StaffSeeder extends Seeder
         foreach ($housemanOfficers as $index => $name) {
             $simpleName = str_replace(['Dr. ', 'bin ', 'binti ', 'a/l '], '', $name);
             $firstName = explode(' ', $simpleName)[0];
-            $email = strtolower($firstName) . '.' . fake()->randomNumber(3) . '@hospital.gov.my';
+            $email = strtolower($firstName) . '.' . $faker->randomNumber(3) . '@hospital.gov.my';
             
             Staff::create([
                 'name' => $name,
@@ -267,10 +270,10 @@ class StaffSeeder extends Seeder
                 'type' => 'houseman_officer',
                 'department_id' => 1, // Internal Medicine Department
                 'current_rotation' => $rotations[$index],
-                'graduation_year' => fake()->numberBetween(2021, 2023),
-                'joining_date' => fake()->dateTimeBetween('-10 months', '-1 month'),
+                'graduation_year' => $faker->numberBetween(2021, 2023),
+                'joining_date' => $faker->dateTimeBetween('-10 months', '-1 month'),
                 'is_active' => true,
-                'notes' => fake()->paragraph(1),
+                'notes' => $faker->paragraph(1),
             ]);
         }
         
@@ -294,7 +297,7 @@ class StaffSeeder extends Seeder
         foreach ($nurses as $index => $name) {
             $simpleName = str_replace(['Jururawat ', 'bin ', 'binti ', 'a/p '], '', $name);
             $firstName = explode(' ', $simpleName)[0];
-            $email = strtolower($firstName) . '.' . fake()->randomNumber(3) . '@hospital.gov.my';
+            $email = strtolower($firstName) . '.' . $faker->randomNumber(3) . '@hospital.gov.my';
             
             Staff::create([
                 'name' => $name,
@@ -304,9 +307,9 @@ class StaffSeeder extends Seeder
                 'department_id' => 1, // Internal Medicine Department
                 'nursing_unit' => $units[$index],
                 'nurse_level' => $levels[$index],
-                'joining_date' => fake()->dateTimeBetween('-5 years', '-1 month'),
+                'joining_date' => $faker->dateTimeBetween('-5 years', '-1 month'),
                 'is_active' => true,
-                'notes' => fake()->paragraph(1),
+                'notes' => $faker->paragraph(1),
             ]);
         }
     }
