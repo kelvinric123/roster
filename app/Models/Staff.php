@@ -87,14 +87,6 @@ class Staff extends Model
     }
 
     /**
-     * Get the roster entries for the staff member
-     */
-    public function rosterEntries()
-    {
-        return $this->hasMany(RosterEntry::class);
-    }
-
-    /**
      * Get the roster slots for the staff member
      */
     public function rosterSlots()
@@ -107,9 +99,14 @@ class Staff extends Model
      */
     public function rosters()
     {
-        return $this->belongsToMany(Roster::class, 'roster_entries')
-            ->withPivot(['date', 'start_time', 'end_time', 'shift_type', 'notes', 'is_confirmed'])
-            ->withTimestamps();
+        return $this->hasManyThrough(
+            Roster::class,
+            RosterSlot::class,
+            'staff_id', // Foreign key on roster_slots table
+            'id', // Foreign key on rosters table
+            'id', // Local key on staff table
+            'roster_id' // Local key on roster_slots table
+        );
     }
 
     /**

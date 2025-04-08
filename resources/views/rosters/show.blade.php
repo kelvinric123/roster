@@ -146,8 +146,7 @@
                                                     <option value="night">{{ __('Night Shift') }}</option>
                                                 @endif
                                             @else
-                                                <option value="oncall">{{ __('First Oncall') }}</option>
-                                                <option value="standby">{{ __('Second Oncall') }}</option>
+                                                <option value="oncall">{{ __('Oncall') }}</option>
                                             @endif
                                         </select>
                                     </div>
@@ -194,9 +193,16 @@
                                         <button type="button" 
                                             @click="saveAllChanges" 
                                             class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                                            :disabled="!entries.some(e => e.is_temp)"
+                                            :disabled="!entries.some(e => e.is_temp) || isSaving"
                                             :class="{'relative': false}">
-                                            Save All Changes
+                                            <span x-show="!isSaving">Save All Changes</span>
+                                            <span x-show="isSaving" class="flex items-center">
+                                                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                Saving...
+                                            </span>
                                             <template x-if="false">
                                                 <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                                                     <span x-text="entries.filter(e => e.is_temp).length"></span>
@@ -279,12 +285,10 @@
                                                 @else
                                                     <template x-if="shiftFilter === 'all' || shiftFilter === 'oncall'">
                                                         <th class="border border-gray-300 px-4 py-2 text-left bg-orange-50">
-                                                            {{ __('First Oncall') }}
-                                                        </th>
-                                                    </template>
-                                                    <template x-if="shiftFilter === 'all' || shiftFilter === 'standby'">
-                                                        <th class="border border-gray-300 px-4 py-2 text-left bg-purple-50">
-                                                            {{ __('Second Oncall') }}
+                                                            @php
+                                                                $oncallStaffCount = $roster->department->staffTypeRosters->firstWhere('staff_type', $roster->staff_type)->settings['oncall_staff_count'] ?? 2;
+                                                            @endphp
+                                                            {{ __('Oncall') }} ({{ $oncallStaffCount }} {{ __('staff') }})
                                                         </th>
                                                     </template>
                                                 @endif
@@ -292,7 +296,7 @@
                                         </thead>
                                         <tbody>
                                             <template x-for="(dateInfo, index) in visibleCalendarDates" :key="dateInfo.date">
-                                                <tr :class="{'bg-yellow-50': dateInfo.isWeekend}">
+                                                <tr :class="{'bg-yellow-50': dateInfo.isWeekend}" :data-date="dateInfo.date">
                                                     <td class="border border-gray-300 px-4 py-2">
                                                         <div x-text="dateInfo.formatted"></div>
                                                         <div class="text-xs text-gray-600" x-text="dateInfo.day"></div>
@@ -308,6 +312,15 @@
                                                                 </div>
                                                             </template>
                                                         @endforeach
+                                                        
+                                                        <!-- Show oncall staff count for this date -->
+                                                        <template x-if="rosterType === 'oncall'">
+                                                            <div class="mt-1 text-xs">
+                                                                <span class="px-2 py-0.5 bg-orange-100 text-orange-800 rounded-full">
+                                                                    <span x-text="getEntriesForDateAndShift(dateInfo.date, 'oncall').length"></span>/<span>{{ $roster->department->staffTypeRosters->firstWhere('staff_type', $roster->staff_type)->settings['oncall_staff_count'] ?? 2 }}</span> staff
+                                                                </span>
+                                                            </div>
+                                                        </template>
                                                     </td>
                                                     
                                                     @if($roster->roster_type == 'shift')
@@ -413,6 +426,8 @@
                                                                 :id="'cell-' + dateInfo.date + '-oncall'"
                                                                 @dragover.prevent
                                                                 @drop="handleDrop($event, dateInfo.date, 'oncall')">
+                                                                
+                                                                <!-- Show staff entries -->
                                                                 <template x-for="entry in getEntriesForDateAndShift(dateInfo.date, 'oncall')" :key="entry.id">
                                                                     <div 
                                                                         :class="{
@@ -434,41 +449,14 @@
                                                                         <div>
                                                                             <span class="px-1 rounded-full text-xs bg-orange-100 text-orange-800" x-text="entry.shift_type_label"></span>
                                                                         </div>
-                                                                        <!-- Time display removed -->
                                                                     </div>
                                                                 </template>
-                                                            </td>
-                                                        </template>
-                                                        
-                                                        <template x-if="shiftFilter === 'all' || shiftFilter === 'standby'">
-                                                            <td class="border border-gray-300 px-4 py-2 min-h-20 drop-zone"
-                                                                :id="'cell-' + dateInfo.date + '-standby'"
-                                                                @dragover.prevent
-                                                                @drop="handleDrop($event, dateInfo.date, 'standby')">
-                                                                <template x-for="entry in getEntriesForDateAndShift(dateInfo.date, 'standby')" :key="entry.id">
-                                                                    <div 
-                                                                        :class="{
-                                                                            'mb-1 p-1 text-xs rounded shadow-sm border': true,
-                                                                            'bg-amber-50 border-amber-300': entry.is_confirmed && !entry.is_temp,
-                                                                            'bg-gray-50 border-gray-300': !entry.is_confirmed && !entry.is_temp,
-                                                                            'bg-gray-50 border-gray-300': entry.is_temp
-                                                                        }"
-                                                                        :title="entry.staff.name + ' - ' + entry.shift_type_label + (false ? ' (Unsaved)' : '')"
-                                                                    >
-                                                                        <div class="flex items-start justify-between">
-                                                                            <span class="font-medium" x-text="entry.staff.name"></span>
-                                                                            <button type="button" class="text-gray-400 hover:text-red-500" @click="removeEntry(entry.id)">
-                                                                                <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
-                                                                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                                                                                </svg>
-                                                                            </button>
-                                                                        </div>
-                                                                        <div>
-                                                                            <span class="px-1 rounded-full text-xs bg-amber-100 text-amber-800" x-text="entry.shift_type_label"></span>
-                                                                        </div>
-                                                                        <!-- Time display removed -->
-                                                                    </div>
-                                                                </template>
+                                                                
+                                                                <!-- Only show empty slots message when there are no entries -->
+                                                                <div x-show="getEntriesForDateAndShift(dateInfo.date, 'oncall').length === 0" 
+                                                                    class="text-xs text-gray-400 italic">
+                                                                    Empty slots
+                                                                </div>
                                                             </td>
                                                         </template>
                                                     @endif
@@ -497,6 +485,7 @@
                 visibleEndIndex: 13, // Show 14 days (2 weeks) by default
                 rosterType: '{{ $roster->roster_type }}',
                 draggingStaff: null,
+                isSaving: false,
                 
                 // Additional properties for printing
                 rosterName: '{{ $roster->name }}',
@@ -714,8 +703,8 @@
                         }
                     } else {
                         switch(shiftType) {
-                            case 'oncall': return '{{ __('First Oncall') }}';
-                            case 'standby': return '{{ __('Second Oncall') }}';
+                            case 'oncall': return '{{ __('Oncall') }}';
+                            case 'standby': return '{{ __('Standby') }}';
                             default: return shiftType;
                         }
                     }
@@ -736,6 +725,17 @@
                     
                     // Make sure the date is in YYYY-MM-DD format
                     const formattedDate = date;
+                    
+                    // Check if adding this staff would exceed the on-call staff limit
+                    if (this.rosterType === 'oncall' && shiftType === 'oncall') {
+                        const currentEntries = this.getEntriesForDateAndShift(date, 'oncall');
+                        const maxStaff = {{ $roster->department->staffTypeRosters->firstWhere('staff_type', $roster->staff_type)->settings['oncall_staff_count'] ?? 2 }};
+                        
+                        if (currentEntries.length >= maxStaff) {
+                            alert(`Cannot add more staff. Maximum ${maxStaff} on-call staff allowed for this date.`);
+                            return;
+                        }
+                    }
                     
                     // Create temporary entry
                     const newEntry = {
@@ -786,6 +786,9 @@
                     }));
                     
                     console.log('Saving temporary entries:', payload);
+                    
+                    // Show a loading indicator
+                    this.isSaving = true;
                     
                     // Access the bulk-store endpoint directly with the URL
                     fetch('/manage/rosters/{{ $roster->id }}/entries/bulk', {
@@ -863,12 +866,24 @@
                             // Reprocess entries to ensure all staff data is properly linked
                             this.processEntries();
                             
-                            // Force Alpine to refresh the display
+                            // Force Alpine to refresh the entire display
                             this.$nextTick(() => {
                                 console.log('Refreshing display after save');
+                                
+                                // After entries are updated, force Alpine to re-evaluate the display
+                                // This ensures on-call staff count and empty slots are correctly updated
+                                this.$el.querySelectorAll('[x-text="getEntriesForDateAndShift(dateInfo.date, \'oncall\').length"]').forEach(el => {
+                                    // This trick forces Alpine to re-evaluate the expression
+                                    const date = el.closest('tr').getAttribute('data-date');
+                                    if (date) {
+                                        el.textContent = this.getEntriesForDateAndShift(date, 'oncall').length;
+                                    }
+                                });
+                                
+                                // Show success message
+                                alert('Changes saved successfully!');
                             });
                             
-                            // Success message is disabled - entries will be saved silently
                         } else {
                             console.error('Error saving entries:', data.message);
                             // Keep the error alert for important errors
@@ -879,6 +894,10 @@
                         console.error('Error:', error);
                         // Keep the error alert for important errors
                         alert('Error saving entries: ' + error.message);
+                    })
+                    .finally(() => {
+                        // Hide loading indicator
+                        this.isSaving = false;
                     });
                 },
                 
@@ -931,7 +950,7 @@
                     // Define shift types based on roster type
                     const shiftTypes = this.rosterType === 'shift' 
                         ? ['morning', 'evening', 'night'] 
-                        : ['oncall', 'standby'];
+                        : ['oncall'];
                     
                     // Filter shift types based on the current filter
                     const activeShiftTypes = this.shiftFilter === 'all' 
@@ -961,8 +980,16 @@
                     visibleDates.forEach(dateInfo => {
                         activeShiftTypes.forEach(shiftType => {
                             const entries = this.getEntriesForDateAndShift(dateInfo.date, shiftType);
-                            // Add empty cells with no staff assigned
-                            if (entries.length === 0) {
+                            
+                            // Get max staff count for this shift type
+                            let maxStaff = 1; // Default for regular shifts
+                            if (this.rosterType === 'oncall' && shiftType === 'oncall') {
+                                maxStaff = {{ $roster->department->staffTypeRosters->firstWhere('staff_type', $roster->staff_type)->settings['oncall_staff_count'] ?? 2 }};
+                            }
+                            
+                            // Add empty cells based on how many more staff can be assigned
+                            const slotsNeeded = Math.max(0, maxStaff - entries.length);
+                            for (let i = 0; i < slotsNeeded; i++) {
                                 emptyCells.push({
                                     date: dateInfo.date,
                                     shiftType
@@ -1369,7 +1396,7 @@
                         if (this.rosterType === 'shift') {
                             headers.push('Morning Shift', 'Evening Shift', 'Night Shift');
                         } else {
-                            headers.push('First Oncall', 'Second Oncall');
+                            headers.push('Oncall');
                         }
                         
                         // Prepare data rows for each date
@@ -1384,7 +1411,7 @@
                             // Add data for each shift type
                             const shiftTypes = this.rosterType === 'shift' 
                                 ? ['morning', 'evening', 'night'] 
-                                : ['oncall', 'standby'];
+                                : ['oncall'];
                                 
                             shiftTypes.forEach(shiftType => {
                                 const entries = this.getEntriesForDateAndShift(dateInfo.date, shiftType);
@@ -1470,7 +1497,7 @@
                             if (this.rosterType === 'shift') {
                                 headers.push('Morning Shift', 'Evening Shift', 'Night Shift');
                             } else {
-                                headers.push('First Oncall', 'Second Oncall');
+                                headers.push('Oncall');
                             }
                             
                             // Prepare data rows for each date
@@ -1485,7 +1512,7 @@
                                 // Add data for each shift type
                                 const shiftTypes = this.rosterType === 'shift' 
                                     ? ['morning', 'evening', 'night'] 
-                                    : ['oncall', 'standby'];
+                                    : ['oncall'];
                                     
                                 shiftTypes.forEach(shiftType => {
                                     const entries = this.getEntriesForDateAndShift(dateInfo.date, shiftType);

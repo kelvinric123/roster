@@ -50,17 +50,29 @@ class DepartmentStaffTypeRosterController extends Controller
         $validator = Validator::make($request->all(), [
             'roster_types' => 'required|array',
             'roster_types.*' => 'required|in:oncall,shift',
+            'oncall_staff_counts' => 'array',
+            'oncall_staff_counts.*' => 'nullable|integer|min:1|max:6',
         ]);
         
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
         
-        // Update each staff type's roster type
+        // Update each staff type's roster type and settings
         foreach ($request->roster_types as $staffType => $rosterType) {
+            $settings = [];
+            
+            // If this is an oncall roster type and we have a staff count setting
+            if ($rosterType === 'oncall' && isset($request->oncall_staff_counts[$staffType])) {
+                $settings['oncall_staff_count'] = (int)$request->oncall_staff_counts[$staffType];
+            }
+            
             $department->staffTypeRosters()
                 ->where('staff_type', $staffType)
-                ->update(['roster_type' => $rosterType]);
+                ->update([
+                    'roster_type' => $rosterType,
+                    'settings' => $settings
+                ]);
         }
         
         return redirect()->route('departments.staff-type-rosters.index', $department)

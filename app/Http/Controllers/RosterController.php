@@ -324,28 +324,18 @@ class RosterController extends Controller
      */
     public function show(Roster $roster)
     {
-        // Log debugging info
-        \Log::info('Starting RosterController@show', [
-            'roster_id' => $roster->id,
-            'roster_name' => $roster->name,
-            'user_id' => auth()->id()
-        ]);
-        
-        // Check roster slots directly
-        $directSlots = DB::table('roster_slots')
-            ->where('roster_id', $roster->id)
-            ->get();
-            
-        \Log::info('Direct roster slots query', [
-            'roster_id' => $roster->id,
-            'direct_slots_count' => $directSlots->count(),
-            'first_slots' => $directSlots->take(2)
-        ]);
-        
         $user = auth()->user();
         $isDepartmentLeader = false;
         $departmentName = null;
-        $departmentId = null;
+        
+        // Add debugging info
+        \Log::info('Showing roster', [
+            'roster_id' => $roster->id,
+            'roster_name' => $roster->name,
+            'user_id' => $user->id,
+            'start_date' => $roster->start_date->format('Y-m-d'),
+            'end_date' => $roster->end_date->format('Y-m-d'),
+        ]);
         
         // Check if user is a department leader
         $teamLeader = \App\Models\TeamLeader::where('staff_id', $user->staff_id)
@@ -406,6 +396,45 @@ class RosterController extends Controller
         
         // Load roster with department and related data
         $roster->load(['department', 'entries.staff', 'slots.staff']);
+        
+        // Debug loaded entries
+        \Log::info('Roster entries and slots loading complete', [
+            'entries_count' => $roster->entries->count(),
+            'slots_count' => $roster->slots->count(),
+        ]);
+        
+        // Debug detailed information about slots
+        if ($roster->slots->count() > 0) {
+            $slotsDebug = $roster->slots->take(5)->map(function($slot) {
+                return [
+                    'id' => $slot->id,
+                    'staff_id' => $slot->staff_id,
+                    'staff_name' => $slot->staff ? $slot->staff->name : 'Unknown',
+                    'date' => $slot->date ? $slot->date->format('Y-m-d') : null,
+                    'shift_type' => $slot->shift_type,
+                    'roster_id' => $slot->roster_id,
+                ];
+            })->toArray();
+            \Log::info('Sample slots:', $slotsDebug);
+            
+            // Check specifically for April 8, 2025
+            $april8slots = $roster->slots->filter(function($slot) {
+                return $slot->date && $slot->date->format('Y-m-d') === '2025-04-08';
+            })->values()->map(function($slot) {
+                return [
+                    'id' => $slot->id,
+                    'staff_id' => $slot->staff_id,
+                    'staff_name' => $slot->staff ? $slot->staff->name : 'Unknown',
+                    'date' => $slot->date ? $slot->date->format('Y-m-d') : null,
+                    'shift_type' => $slot->shift_type,
+                ];
+            })->toArray();
+            
+            \Log::info('April 8, 2025 slots:', [
+                'count' => count($april8slots),
+                'slots' => $april8slots
+            ]);
+        }
         
         // Get date range for the roster
         $startDate = $roster->start_date->copy();

@@ -46,90 +46,56 @@ The system implements a hierarchical staff role structure that accommodates the 
    - Can manage all departments, staff types, and rosters
    - Responsible for system configuration and management
 
-### Role-Based Access
+### Creating New Departments
 
-Each staff type has specific access permissions within the system:
-- Admins can manage all system aspects
-- Specialist doctors can view and sometimes manage department rosters
-- Medical officers and nurses can primarily view their own schedules
-- Team leaders have additional permissions to manage their team members' schedules
+Only administrators can create new departments:
 
-## Roster Type and Shift Logic
+1. Log in with administrator credentials
+2. Navigate to Departments section
+3. Click on "Create New Department"
+4. Fill in the required information:
+   - **Name**: Full department name
+   - **Code**: Short unique department code (up to 10 characters)
+   - **Description**: Optional department description
+5. Click "Save" to create the department
 
-The system supports multiple roster types to accommodate different scheduling needs:
+### Creating New Staff Members
 
-### Roster Types
+Staff members can be created by administrators or department leaders (for their own departments):
 
-1. **Regular Shift Roster**
-   - Standard shift-based scheduling
-   - Configurable shift patterns (morning, evening, night)
-   - Support for rotation patterns and shift swaps
-   - Visual calendar view with color-coded shift assignments
+1. Navigate to Staff section
+2. Click on "Add New Staff Member"
+3. Complete the staff profile form:
+   - **Name**: Full name of the staff member
+   - **Email**: Email address (used for login)
+   - **Phone**: Contact number
+   - **Type**: Select from available staff types
+   - **Department**: Assign to a specific department
+   - **Joining Date**: Start date at the facility
+   - **Notes**: Optional additional information
+4. Submit the form to create the staff profile
+   - A user account will be automatically created with the default password: `qmed.asia`
 
-2. **On-Call Roster**
-   - Scheduling for after-hours emergency coverage
-   - Rotation-based assignment to ensure fair distribution
-   - Integration with regular shift schedules to prevent overlaps
-   - Support for primary and backup on-call assignments
+## Roster Management
 
-### Shift Settings
+### Creating Department Rosters
 
-For each department and staff type, shift settings can be customized:
-- Shift durations (e.g., 8-hour, 12-hour shifts)
-- Start and end times for different shift types
-- Required minimum staff counts per shift
-- Special shift types for weekends or holidays
+The system supports flexible roster creation for each department and staff type:
 
-## Team Leader Logic
+1. Navigate to the Roster Management section
+2. Select the department and staff type to create a roster for
+3. Choose the roster type (shift-based or on-call)
+4. Configure schedule settings specific to the department's needs
+5. Create and manage the roster through the interactive calendar interface
 
-Team leaders play a crucial role in the roster management hierarchy:
+### Managing Team Leaders
 
-### Team Leader Functionality
+Team leaders have special roster management privileges for their departments:
 
-- **Assignment**: Each department can assign team leaders for different staff types
-- **Responsibilities**: Team leaders can review, approve, and adjust schedules
-- **Oversight**: They can monitor staff distribution and workload balance
-- **Approvals**: Leave requests and shift swap approvals flow through team leaders
-- **Reports**: Access to departmental statistics and staff performance metrics
-
-### Team Leader Assignment
-
-- Team leaders are typically selected from senior staff (specialist doctors or senior nurses)
-- They have department-specific oversight responsibilities
-- Assignment is managed through the team leader management interface
-- One staff member can be a team leader for multiple departments if needed
-
-## System Architecture
-
-The system follows a modular design pattern:
-
-### Core Components
-
-1. **Department Management**
-   - Creation and configuration of hospital departments
-   - Setting department-specific roster requirements
-
-2. **Staff Management**
-   - Staff profiles and qualification tracking
-   - Work history and specialization records
-   - Availability and leave management
-
-3. **Roster Creation and Management**
-   - Interactive calendar interfaces
-   - Drag-and-drop shift assignment
-   - Conflict detection and resolution
-   - Schedule template creation and reuse
-
-4. **Notification System**
-   - Alerts for new schedule assignments
-   - Reminders for upcoming shifts
-   - Notifications for schedule changes or approval requests
-
-5. **Reporting and Analytics**
-   - Staff utilization reports
-   - Department workload analysis
-   - Schedule fairness metrics
-   - Historical data comparison
+1. Navigate to Team Leaders section
+2. Assign team leaders to departments by selecting staff members
+3. Set leader effective dates and responsibilities
+4. Team leaders will have access to manage their team's schedules
 
 ## Getting Started
 
@@ -144,7 +110,7 @@ The system follows a modular design pattern:
 
 1. Clone the repository
 ```bash
-git clone https://github.com/kelvinric123/roster.git
+git clone https://github.com/qmed-asia/roster.git
 ```
 
 2. Install PHP dependencies

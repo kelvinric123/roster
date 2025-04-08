@@ -62,6 +62,19 @@
                                                         <input type="radio" class="form-radio text-orange-600" name="roster_types[{{ $staffTypeRoster->staff_type }}]" value="oncall" {{ $staffTypeRoster->roster_type == 'oncall' ? 'checked' : '' }}>
                                                         <span class="ml-2">On Call</span>
                                                     </label>
+                                                    @if($staffTypeRoster->roster_type == 'oncall')
+                                                        <div class="ml-4">
+                                                            <label class="text-sm text-gray-600">On Call Staff Count:</label>
+                                                            <select name="oncall_staff_counts[{{ $staffTypeRoster->staff_type }}]" class="ml-2 border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                                                <option value="1" {{ ($staffTypeRoster->settings['oncall_staff_count'] ?? 2) == 1 ? 'selected' : '' }}>1</option>
+                                                                <option value="2" {{ ($staffTypeRoster->settings['oncall_staff_count'] ?? 2) == 2 ? 'selected' : '' }}>2</option>
+                                                                <option value="3" {{ ($staffTypeRoster->settings['oncall_staff_count'] ?? 2) == 3 ? 'selected' : '' }}>3</option>
+                                                                <option value="4" {{ ($staffTypeRoster->settings['oncall_staff_count'] ?? 2) == 4 ? 'selected' : '' }}>4</option>
+                                                                <option value="5" {{ ($staffTypeRoster->settings['oncall_staff_count'] ?? 2) == 5 ? 'selected' : '' }}>5</option>
+                                                                <option value="6" {{ ($staffTypeRoster->settings['oncall_staff_count'] ?? 2) == 6 ? 'selected' : '' }}>6</option>
+                                                            </select>
+                                                        </div>
+                                                    @endif
                                                 </div>
                                             </td>
                                         </tr>

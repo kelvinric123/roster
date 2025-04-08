@@ -220,7 +220,13 @@
                             const display = document.querySelector(`.roster-type[data-staff-type="${staffTypeRoster.staff_type}"]`);
                             if (display) {
                                 const label = rosterTypeLabels[staffTypeRoster.roster_type] || staffTypeRoster.roster_type;
-                                display.textContent = label;
+                                
+                                if (staffTypeRoster.roster_type === 'oncall' && staffTypeRoster.settings && staffTypeRoster.settings.oncall_staff_count) {
+                                    display.textContent = `${label} (${staffTypeRoster.settings.oncall_staff_count} staff)`;
+                                } else {
+                                    display.textContent = label;
+                                }
+                                
                                 display.classList.add(staffTypeRoster.roster_type === 'oncall' ? 'text-orange-600' : 'text-blue-600');
                             }
                         });
@@ -253,7 +259,13 @@
                             rosterTypeValue.className = '';
                             rosterTypeValue.classList.add(rosterType === 'oncall' ? 'text-orange-600' : 'text-blue-600', 'font-medium');
                             
-                            rosterTypeExplanation.textContent = `This department uses ${rosterTypeLabels[rosterType]} roster type for this staff type.`;
+                            if (rosterType === 'oncall' && staffTypeRoster.settings && staffTypeRoster.settings.oncall_staff_count) {
+                                const oncallCount = staffTypeRoster.settings.oncall_staff_count;
+                                rosterTypeValue.textContent = `${rosterTypeLabels[rosterType]} (${oncallCount} staff)`;
+                                rosterTypeExplanation.textContent = `This department uses ${rosterTypeLabels[rosterType]} roster type with ${oncallCount} on-call staff for this staff type.`;
+                            } else {
+                                rosterTypeExplanation.textContent = `This department uses ${rosterTypeLabels[rosterType]} roster type for this staff type.`;
+                            }
                         } else {
                             rosterTypeValue.textContent = 'Not configured';
                             rosterTypeExplanation.textContent = 'This staff type does not have a roster configuration in this department.';

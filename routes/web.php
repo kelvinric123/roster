@@ -4,9 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\RosterController;
-use App\Http\Controllers\RosterEntryController;
 use App\Http\Controllers\RosterDashboardController;
-use App\Http\Controllers\RosterShiftSettingController;
 use App\Http\Controllers\DepartmentStaffTypeRosterController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\StaffRosterViewController;
@@ -75,13 +73,8 @@ Route::middleware('auth')->group(function () {
     });
 
     // Roster Entry routes
-    Route::resource('roster-entries', RosterEntryController::class)->except(['index']);
-    Route::get('/roster/{roster}/entries', [RosterEntryController::class, 'index'])->name('roster.entries.index');
     Route::post('/rosters/{roster}/entries', [RosterController::class, 'storeEntry'])->name('rosters.entries.store');
     Route::delete('/rosters/entries/{entry}', [RosterController::class, 'destroyEntry'])->name('rosters.entries.destroy');
-    Route::patch('/roster-entries/{entry}/toggle-confirmation', [RosterEntryController::class, 'toggleConfirmation'])->name('roster.entries.toggle_confirmation');
-    Route::post('/roster-entries/bulk-create', [RosterEntryController::class, 'bulkCreate'])->name('roster.entries.bulk_create');
-    Route::post('/roster-entries/bulk-update', [RosterEntryController::class, 'bulkUpdate'])->name('roster.entries.bulk_update');
     
     // Roster Slot routes
     Route::post('/rosters/{roster}/slots', [RosterController::class, 'storeSlot'])->name('rosters.slots.store');
@@ -92,9 +85,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/roster-dashboard', [RosterDashboardController::class, 'index'])->name('roster.dashboard');
     Route::get('/roster-dashboard/staff-type/{type}', [RosterDashboardController::class, 'staffTypeStats'])->name('roster.staff_type_stats');
     Route::get('/roster-dashboard/department/{id}', [RosterDashboardController::class, 'departmentStats'])->name('roster.department_stats');
-
-    // Roster Shift Settings Routes
-    Route::resource('roster-shift-settings', RosterShiftSettingController::class);
 });
 
 Route::get('/test-slots', function() {
