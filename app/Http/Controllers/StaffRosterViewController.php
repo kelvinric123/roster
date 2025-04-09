@@ -87,7 +87,7 @@ class StaffRosterViewController extends Controller
                     break;
             }
         } else {
-            // Regular staff can only view rosters for their staff type
+            // Regular staff can only view sortable-rosters for their staff type
             $query->where('staff_type', $staff->type);
         }
         
@@ -156,12 +156,12 @@ class StaffRosterViewController extends Controller
         // Check department
         if ($roster->department_id != $staff->department_id) {
             return redirect()->route('staff.rosters.index')
-                ->with('error', 'You can only view rosters from your department.');
+                ->with('error', 'You can only view sortable-rosters from your department.');
         }
         
         if (!$roster->is_published) {
             return redirect()->route('staff.rosters.index')
-                ->with('error', 'You can only view published rosters.');
+                ->with('error', 'You can only view published sortable-rosters.');
         }
         
         // Apply staff type restrictions based on leader type
@@ -187,13 +187,13 @@ class StaffRosterViewController extends Controller
                     $canView = false;
             }
         } else {
-            // Regular staff can only view rosters for their staff type
+            // Regular staff can only view sortable-rosters for their staff type
             $canView = $roster->staff_type === $staff->type;
         }
         
         if (!$canView) {
             return redirect()->route('staff.rosters.index')
-                ->with('error', 'You do not have permission to view this roster.');
+                ->with('error', 'You do not have permission to view this sortable-roster.');
         }
 
         // Load slots with the staff

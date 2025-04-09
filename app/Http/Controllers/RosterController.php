@@ -360,7 +360,7 @@ class RosterController extends Controller
             // Check if the roster belongs to the leader's department
             if ($roster->department_id != $departmentId) {
                 return redirect()->route('manage.rosters.index')
-                    ->with('error', 'You can only view rosters from your department.');
+                    ->with('error', 'You can only view sortable-rosters from your department.');
             }
             
             // Check staff type restrictions

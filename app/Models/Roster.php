@@ -19,12 +19,14 @@ class Roster extends Model
         'description',
         'is_published',
         'roster_type',
+        'metadata',
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
         'is_published' => 'boolean',
+        'metadata' => 'array',
     ];
 
     /**
@@ -117,6 +119,7 @@ class Roster extends Model
         $types = [
             'oncall' => 'On Call',
             'shift' => 'Shift',
+            'sortable' => 'Sortable',
         ];
         
         return $types[$this->roster_type] ?? ucfirst($this->roster_type);

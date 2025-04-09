@@ -52,6 +52,9 @@ class DepartmentStaffTypeRosterController extends Controller
             'roster_types.*' => 'required|in:oncall,shift',
             'oncall_staff_counts' => 'array',
             'oncall_staff_counts.*' => 'nullable|integer|min:1|max:6',
+            'oncall_staff_titles' => 'array',
+            'oncall_staff_titles.*' => 'array',
+            'oncall_staff_titles.*.*' => 'nullable|string|max:255',
         ]);
         
         if ($validator->fails()) {
@@ -63,8 +66,32 @@ class DepartmentStaffTypeRosterController extends Controller
             $settings = [];
             
             // If this is an oncall roster type and we have a staff count setting
-            if ($rosterType === 'oncall' && isset($request->oncall_staff_counts[$staffType])) {
-                $settings['oncall_staff_count'] = (int)$request->oncall_staff_counts[$staffType];
+            if ($rosterType === 'oncall') {
+                if (isset($request->oncall_staff_counts[$staffType])) {
+                    $settings['oncall_staff_count'] = (int)$request->oncall_staff_counts[$staffType];
+                }
+                
+                // Save oncall staff titles if provided
+                if (isset($request->oncall_staff_titles[$staffType])) {
+                    $titles = array_map(function($title) {
+                        return trim($title) ?: null;
+                    }, $request->oncall_staff_titles[$staffType]);
+                    
+                    // Filter out any null values and ensure we have proper titles
+                    $titles = array_filter($titles, function($title) {
+                        return $title !== null;
+                    });
+                    
+                    // If we have no valid titles, create default ones based on the count
+                    if (empty($titles)) {
+                        $count = $settings['oncall_staff_count'] ?? 2;
+                        for ($i = 1; $i <= $count; $i++) {
+                            $titles[] = "oncall {$i}";
+                        }
+                    }
+                    
+                    $settings['oncall_staff_titles'] = array_values($titles);
+                }
             }
             
             $department->staffTypeRosters()

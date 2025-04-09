@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('View Rosters') }}
+                {{ __('View Sortable-Rosters') }}
             </h2>
         </div>
     </x-slot>
@@ -31,7 +31,7 @@
                                 <p class="text-gray-700">Your Role: {{ ucfirst(str_replace('_', ' ', $staff->type)) }} Leader</p>
                                 
                                 <div class="mt-2">
-                                    <p class="text-gray-600 font-medium">You have access to view rosters for:</p>
+                                    <p class="text-gray-600 font-medium">You have access to view sortable-rosters for:</p>
                                     <ul class="list-disc ml-5 mt-1">
                                         @php
                                             $accessibleTypes = [];
@@ -70,7 +70,7 @@
                                     ];
                                 @endphp
                                 <p class="text-gray-700">Role: {{ $staffTypeLabels[$staff->type] ?? ucfirst(str_replace('_', ' ', $staff->type)) }}</p>
-                                <p class="text-gray-600 mt-2">You can only view rosters for your department and staff type.</p>
+                                <p class="text-gray-600 mt-2">You can only view sortable-rosters for your department and staff type.</p>
                             </div>
                         @endif
                     </div>
@@ -117,7 +117,7 @@
                                             <td class="py-3 px-4 text-center">
                                                 <div class="flex items-center justify-center space-x-2">
                                                     <a href="{{ route('staff.rosters.show', $roster) }}" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700" title="View">
-                                                        View Roster
+                                                        View Sortable-Rosters
                                                     </a>
                                                 </div>
                                             </td>

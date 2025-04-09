@@ -10,6 +10,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\StaffRosterViewController;
 use App\Http\Controllers\TeamLeaderController;
 use App\Http\Controllers\HolidayController;
+use App\Http\Controllers\SortableRosterController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -64,9 +65,18 @@ Route::middleware('auth')->group(function () {
         Route::post('/rosters/{roster}/publish', [RosterController::class, 'publish'])->name('rosters.publish');
         Route::post('/rosters/{roster}/unpublish', [RosterController::class, 'unpublish'])->name('rosters.unpublish');
         Route::post('/rosters/{roster}/entries/bulk', [RosterController::class, 'bulkStoreEntries'])->name('rosters.entries.bulk-store');
+        
+        // Sortable Roster routes
+        Route::get('/sortable-rosters/create', [SortableRosterController::class, 'create'])->name('sortable-rosters.create');
+        Route::post('/sortable-rosters', [SortableRosterController::class, 'store'])->name('sortable-rosters.store');
+        Route::get('/sortable-rosters/{sortableRoster}', [SortableRosterController::class, 'show'])->name('sortable-rosters.show');
+        Route::post('/sortable-rosters/{sortableRoster}/update-order', [SortableRosterController::class, 'updateOrder'])->name('sortable-rosters.update-order');
+        Route::post('/sortable-rosters/{sortableRoster}/generate-assignments', [SortableRosterController::class, 'generateAssignments'])->name('sortable-rosters.generate-assignments');
+        Route::post('/sortable-rosters/{sortableRoster}/publish', [SortableRosterController::class, 'publish'])->name('sortable-rosters.publish');
+        Route::post('/sortable-rosters/{sortableRoster}/save-assignments', [SortableRosterController::class, 'saveAssignments'])->name('sortable-rosters.save-assignments');
     });
 
-    // Staff View Rosters routes
+    // Staff View Sortable-Rosters routes
     Route::prefix('staff-view')->name('staff.')->group(function () {
         Route::get('/rosters', [StaffRosterViewController::class, 'index'])->name('rosters.index');
         Route::get('/rosters/{roster}', [StaffRosterViewController::class, 'show'])->name('rosters.show');

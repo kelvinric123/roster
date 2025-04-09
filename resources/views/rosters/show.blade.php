@@ -286,7 +286,14 @@
                                                     <template x-if="shiftFilter === 'all' || shiftFilter === 'oncall'">
                                                         <th class="border border-gray-300 px-4 py-2 text-left bg-orange-50">
                                                             @php
-                                                                $oncallStaffCount = $roster->department->staffTypeRosters->firstWhere('staff_type', $roster->staff_type)->settings['oncall_staff_count'] ?? 2;
+                                                                $staffTypeRoster = $roster->department->staffTypeRosters->firstWhere('staff_type', $roster->staff_type);
+                                                                $oncallStaffCount = $staffTypeRoster->settings['oncall_staff_count'] ?? 2;
+                                                                $oncallStaffTitles = $staffTypeRoster->settings['oncall_staff_titles'] ?? [];
+                                                                
+                                                                // Ensure we have enough titles
+                                                                while(count($oncallStaffTitles) < $oncallStaffCount) {
+                                                                    $oncallStaffTitles[] = "oncall " . (count($oncallStaffTitles) + 1);
+                                                                }
                                                             @endphp
                                                             {{ __('Oncall') }} ({{ $oncallStaffCount }} {{ __('staff') }})
                                                         </th>
@@ -427,36 +434,70 @@
                                                                 @dragover.prevent
                                                                 @drop="handleDrop($event, dateInfo.date, 'oncall')">
                                                                 
-                                                                <!-- Show staff entries -->
-                                                                <template x-for="entry in getEntriesForDateAndShift(dateInfo.date, 'oncall')" :key="entry.id">
-                                                                    <div 
-                                                                        :class="{
-                                                                            'mb-1 p-1 text-xs rounded shadow-sm border': true,
-                                                                            'bg-orange-50 border-orange-300': entry.is_confirmed && !entry.is_temp,
-                                                                            'bg-gray-50 border-gray-300': !entry.is_confirmed && !entry.is_temp,
-                                                                            'bg-gray-50 border-gray-300': entry.is_temp
-                                                                        }"
-                                                                        :title="entry.staff.name + ' - ' + entry.shift_type_label + (false ? ' (Unsaved)' : '')"
-                                                                    >
-                                                                        <div class="flex items-start justify-between">
-                                                                            <span class="font-medium" x-text="entry.staff.name"></span>
-                                                                            <button type="button" class="text-gray-400 hover:text-red-500" @click="removeEntry(entry.id)">
-                                                                                <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
-                                                                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                                                                                </svg>
-                                                                            </button>
+                                                                <!-- Group entries by oncall staff title -->
+                                                                @php
+                                                                    $staffTypeRoster = $roster->department->staffTypeRosters->firstWhere('staff_type', $roster->staff_type);
+                                                                    $oncallStaffCount = $staffTypeRoster->settings['oncall_staff_count'] ?? 2;
+                                                                    $oncallStaffTitles = $staffTypeRoster->settings['oncall_staff_titles'] ?? [];
+                                                                    
+                                                                    // Ensure we have enough titles
+                                                                    while(count($oncallStaffTitles) < $oncallStaffCount) {
+                                                                        $oncallStaffTitles[] = "oncall " . (count($oncallStaffTitles) + 1);
+                                                                    }
+                                                                @endphp
+
+                                                                <!-- For each oncall staff title, create a subsection -->
+                                                                <template x-for="(title, titleIndex) in {{ json_encode($oncallStaffTitles) }}" :key="titleIndex">
+                                                                    <div class="mb-3 border rounded-md p-2 bg-gray-50">
+                                                                        <div class="text-xs font-semibold text-gray-700 mb-2 bg-orange-100 text-orange-800 py-1 px-2 rounded-md">
+                                                                            <span x-text="title"></span>
                                                                         </div>
-                                                                        <div>
-                                                                            <span class="px-1 rounded-full text-xs bg-orange-100 text-orange-800" x-text="entry.shift_type_label"></span>
+                                                                        
+                                                                        <!-- Filter entries for this title index -->
+                                                                        <template x-for="entry in getEntriesForDateAndShift(dateInfo.date, 'oncall').filter((e, i) => {
+                                                                            // Use subsection_index if available, otherwise fallback to modulo method
+                                                                            if (e.subsection_index !== undefined) {
+                                                                                return e.subsection_index === titleIndex;
+                                                                            } else {
+                                                                                return i % {{ count($oncallStaffTitles) }} === titleIndex;
+                                                                            }
+                                                                        })" :key="entry.id">
+                                                                            <div 
+                                                                                :class="{
+                                                                                    'mb-1 p-1 text-xs rounded shadow-sm border': true,
+                                                                                    'bg-orange-50 border-orange-300': entry.is_confirmed && !entry.is_temp,
+                                                                                    'bg-gray-50 border-gray-300': !entry.is_confirmed && !entry.is_temp,
+                                                                                    'bg-gray-50 border-gray-300': entry.is_temp
+                                                                                }"
+                                                                                :title="entry.staff.name + ' - ' + entry.shift_type_label + (false ? ' (Unsaved)' : '')"
+                                                                            >
+                                                                                <div class="flex items-start justify-between">
+                                                                                    <div class="font-medium text-sm">
+                                                                                        <span x-text="entry.staff.name"></span>
+                                                                                    </div>
+                                                                                    <button type="button" class="text-gray-400 hover:text-red-500" @click="removeEntry(entry.id)">
+                                                                                        <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                                                                                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                                                                        </svg>
+                                                                                    </button>
+                                                                                </div>
+                                                                            </div>
+                                                                        </template>
+                                                                        
+                                                                        <!-- Show empty slot message if no entry for this title -->
+                                                                        <div x-show="!getEntriesForDateAndShift(dateInfo.date, 'oncall').some((e, i) => {
+                                                                            // Use subsection_index if available, otherwise fallback to modulo method
+                                                                            if (e.subsection_index !== undefined) {
+                                                                                return e.subsection_index === titleIndex;
+                                                                            } else {
+                                                                                return i % {{ count($oncallStaffTitles) }} === titleIndex;
+                                                                            }
+                                                                        })" 
+                                                                            class="text-xs text-gray-400 italic py-1">
+                                                                            Empty slot
                                                                         </div>
                                                                     </div>
                                                                 </template>
-                                                                
-                                                                <!-- Only show empty slots message when there are no entries -->
-                                                                <div x-show="getEntriesForDateAndShift(dateInfo.date, 'oncall').length === 0" 
-                                                                    class="text-xs text-gray-400 italic">
-                                                                    Empty slots
-                                                                </div>
                                                             </td>
                                                         </template>
                                                     @endif
@@ -726,14 +767,31 @@
                     // Make sure the date is in YYYY-MM-DD format
                     const formattedDate = date;
                     
-                    // Check if adding this staff would exceed the on-call staff limit
+                    // For oncall roster type, determine which subsection was dropped on
+                    let subsectionIndex = null;
                     if (this.rosterType === 'oncall' && shiftType === 'oncall') {
                         const currentEntries = this.getEntriesForDateAndShift(date, 'oncall');
                         const maxStaff = {{ $roster->department->staffTypeRosters->firstWhere('staff_type', $roster->staff_type)->settings['oncall_staff_count'] ?? 2 }};
+                        const oncallTitles = {{ json_encode($oncallStaffTitles ?? []) }};
                         
                         if (currentEntries.length >= maxStaff) {
                             alert(`Cannot add more staff. Maximum ${maxStaff} on-call staff allowed for this date.`);
                             return;
+                        }
+                        
+                        // Check if the drop target is a subsection
+                        const target = e.target.closest('.mb-3.border.rounded-md.p-2.bg-gray-50');
+                        if (target) {
+                            // Find which subsection the drop occurred in
+                            const allSubsections = Array.from(e.currentTarget.querySelectorAll('.mb-3.border.rounded-md.p-2.bg-gray-50'));
+                            subsectionIndex = allSubsections.indexOf(target);
+                            
+                            // Check if this subsection already has a staff member
+                            const subsectionEntries = currentEntries.filter((entry, idx) => idx % oncallTitles.length === subsectionIndex);
+                            if (subsectionEntries.length > 0) {
+                                alert(`This position already has a staff member assigned. Please remove existing staff first.`);
+                                return;
+                            }
                         }
                     }
                     
@@ -752,9 +810,54 @@
                         end_time: '23:59:59'
                     };
                     
+                    // For oncall roster, add subsection information
+                    if (subsectionIndex !== null) {
+                        newEntry.subsection_index = subsectionIndex;
+                    }
+                    
                     console.log('Created new entry:', newEntry);
                     
-                    this.entries.push(newEntry);
+                    // If this is an oncall roster and we have a subsection index,
+                    // ensure the entry is placed in the correct position in the array
+                    if (this.rosterType === 'oncall' && shiftType === 'oncall' && subsectionIndex !== null) {
+                        // Find all existing entries for this date/shift
+                        const dateEntries = this.entries.filter(e => 
+                            (e.shift_date === formattedDate || e.date === formattedDate) && 
+                            e.shift_type === shiftType
+                        );
+                        
+                        // Reorder entries based on subsection index
+                        const oncallTitles = {{ json_encode($oncallStaffTitles ?? []) }};
+                        const reorderedEntries = [];
+                        
+                        // First add entries for subsections before this one
+                        for (let i = 0; i < subsectionIndex; i++) {
+                            const entry = dateEntries.find((e, idx) => idx % oncallTitles.length === i);
+                            if (entry) reorderedEntries.push(entry);
+                        }
+                        
+                        // Add the new entry
+                        reorderedEntries.push(newEntry);
+                        
+                        // Then add entries for subsections after this one
+                        for (let i = subsectionIndex + 1; i < oncallTitles.length; i++) {
+                            const entry = dateEntries.find((e, idx) => idx % oncallTitles.length === i);
+                            if (entry) reorderedEntries.push(entry);
+                        }
+                        
+                        // Remove existing entries for this date/shift
+                        this.entries = this.entries.filter(e => 
+                            !(e.shift_date === formattedDate || e.date === formattedDate) || 
+                            e.shift_type !== shiftType
+                        );
+                        
+                        // Add the reordered entries
+                        this.entries = [...this.entries, ...reorderedEntries];
+                    } else {
+                        // Just add the new entry normally
+                        this.entries.push(newEntry);
+                    }
+                    
                     this.draggingStaff = null;
                 },
                 
@@ -782,7 +885,8 @@
                         id: entry.id,  // Include the temporary ID
                         start_time: entry.start_time || '00:00:00', // Default start time
                         end_time: entry.end_time || '23:59:59', // Default end time
-                        notes: entry.notes || '' // Optional notes
+                        notes: entry.notes || '', // Optional notes
+                        subsection_index: entry.subsection_index // Include subsection index for oncall staff
                     }));
                     
                     console.log('Saving temporary entries:', payload);
@@ -1213,6 +1317,18 @@
                                 white-space: nowrap;
                                 overflow: hidden;
                                 text-overflow: ellipsis;
+                            }
+                            
+                            /* Oncall staff title styling for print */
+                            .bg-orange-100 {
+                                background-color: #fff3e0;
+                                color: #d84315;
+                                padding: 1px 4px;
+                                border-radius: 3px;
+                                font-size: 9px;
+                                font-weight: bold;
+                                display: inline-block;
+                                margin-bottom: 2px;
                             }
                             
                             /* Shift columns background colors - subtle and professional */

@@ -74,6 +74,33 @@
                                                                 <option value="6" {{ ($staffTypeRoster->settings['oncall_staff_count'] ?? 2) == 6 ? 'selected' : '' }}>6</option>
                                                             </select>
                                                         </div>
+                                                        
+                                                        <!-- On Call Staff Title Settings -->
+                                                        <div class="ml-4 oncall-staff-titles">
+                                                            <div class="text-sm text-gray-600 mb-2">On Call Staff Titles:</div>
+                                                            @php
+                                                                $oncallStaffCount = $staffTypeRoster->settings['oncall_staff_count'] ?? 2;
+                                                                $oncallStaffTitles = $staffTypeRoster->settings['oncall_staff_titles'] ?? [];
+                                                                // Ensure titles array matches the current staff count
+                                                                while(count($oncallStaffTitles) < $oncallStaffCount) {
+                                                                    $oncallStaffTitles[] = "oncall " . (count($oncallStaffTitles) + 1);
+                                                                }
+                                                            @endphp
+                                                            
+                                                            <div class="grid grid-cols-1 gap-2">
+                                                                @for($i = 0; $i < $oncallStaffCount; $i++)
+                                                                    <div class="flex items-center">
+                                                                        <label class="text-xs text-gray-500 w-20">Staff {{ $i + 1 }}:</label>
+                                                                        <input 
+                                                                            type="text" 
+                                                                            name="oncall_staff_titles[{{ $staffTypeRoster->staff_type }}][]" 
+                                                                            value="{{ $oncallStaffTitles[$i] ?? 'oncall ' . ($i + 1) }}"
+                                                                            class="border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm"
+                                                                            placeholder="Enter staff title">
+                                                                    </div>
+                                                                @endfor
+                                                            </div>
+                                                        </div>
                                                     @endif
                                                 </div>
                                             </td>
@@ -91,4 +118,38 @@
             </div>
         </div>
     </div>
+    
+    <script>
+        // JavaScript to dynamically update the number of title inputs based on the staff count
+        document.addEventListener('DOMContentLoaded', function() {
+            const staffCountSelects = document.querySelectorAll('select[name^="oncall_staff_counts"]');
+            
+            staffCountSelects.forEach(select => {
+                select.addEventListener('change', function() {
+                    const staffType = this.name.match(/\[(.*?)\]/)[1];
+                    const count = parseInt(this.value);
+                    const titlesContainer = this.closest('td').querySelector('.oncall-staff-titles .grid');
+                    
+                    // Clear existing title inputs
+                    titlesContainer.innerHTML = '';
+                    
+                    // Create new title inputs
+                    for (let i = 0; i < count; i++) {
+                        const titleInput = document.createElement('div');
+                        titleInput.className = 'flex items-center';
+                        titleInput.innerHTML = `
+                            <label class="text-xs text-gray-500 w-20">Staff ${i + 1}:</label>
+                            <input 
+                                type="text" 
+                                name="oncall_staff_titles[${staffType}][]" 
+                                value="oncall ${i + 1}"
+                                class="border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm"
+                                placeholder="Enter staff title">
+                        `;
+                        titlesContainer.appendChild(titleInput);
+                    }
+                });
+            });
+        });
+    </script>
 </x-app-layout> 
